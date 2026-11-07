@@ -1,0 +1,35 @@
+{
+  "routine": {
+    "outcome": "retain",
+    "refs": [
+      "POL-READER",
+      "individual OBS-AR records"
+    ]
+  },
+  "current_exception": {
+    "outcome": "retain",
+    "refs": [
+      "POL-ELEVATED",
+      "EX-MIGRATION"
+    ]
+  },
+  "expired_exception": {
+    "outcome": "pending",
+    "refs": [
+      "POL-ELEVATED",
+      "EX-EXPIRED"
+    ]
+  },
+  "stale_write": {
+    "outcome": "refresh_required",
+    "refresh_ref": "OBS-AR-107-V2",
+    "after_refresh": "Propose revoke with new human confirmation and key."
+  },
+  "missing_owner": {
+    "outcome": "pending",
+    "refs": [
+      "POL-ELEVATED",
+      "OBS-AR-108"
+    ]
+  }
+}

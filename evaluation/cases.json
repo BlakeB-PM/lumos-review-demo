@@ -1,0 +1,40 @@
+[
+  {
+    "id": "routine",
+    "items": [
+      "AR-101",
+      "AR-102",
+      "AR-103",
+      "AR-104"
+    ],
+    "question": "What evidence supports grouping these grants?"
+  },
+  {
+    "id": "current_exception",
+    "items": [
+      "AR-105"
+    ],
+    "question": "Does the Atlas approval cover this exact entitlement on the campaign date?"
+  },
+  {
+    "id": "expired_exception",
+    "items": [
+      "AR-106"
+    ],
+    "question": "Is there an authoritative renewal for Eli?"
+  },
+  {
+    "id": "stale_write",
+    "items": [
+      "AR-107"
+    ],
+    "question": "What should happen after the owner closure arrives between confirmation and submit?"
+  },
+  {
+    "id": "missing_owner",
+    "items": [
+      "AR-108"
+    ],
+    "question": "Can we establish whether the legacy job still needs this access?"
+  }
+]

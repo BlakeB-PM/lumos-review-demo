@@ -1,0 +1,191 @@
+[
+  {
+    "id": "AR-101",
+    "person": "Priya Shah",
+    "role": "analyst",
+    "entitlement": "warehouse.reader",
+    "review_id": "Q4-DATA",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "role_alignment",
+      "observed_usage"
+    ],
+    "key_facts": [
+      "Role roster confirms analyst; query observed within 7 days."
+    ],
+    "evidence_refs": [
+      "POL-READER",
+      "OBS-AR-101"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AR-102",
+    "person": "Mateo Ruiz",
+    "role": "analyst",
+    "entitlement": "warehouse.reader",
+    "review_id": "Q4-DATA",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "role_alignment",
+      "observed_usage"
+    ],
+    "key_facts": [
+      "Role roster confirms analyst; query observed within 7 days."
+    ],
+    "evidence_refs": [
+      "POL-READER",
+      "OBS-AR-102"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AR-103",
+    "person": "Leah Chen",
+    "role": "analyst",
+    "entitlement": "warehouse.reader",
+    "review_id": "Q4-DATA",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "role_alignment",
+      "observed_usage"
+    ],
+    "key_facts": [
+      "Role roster confirms analyst; query observed within 7 days."
+    ],
+    "evidence_refs": [
+      "POL-READER",
+      "OBS-AR-103"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AR-104",
+    "person": "Samira Cole",
+    "role": "analyst",
+    "entitlement": "warehouse.reader",
+    "review_id": "Q4-DATA",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "role_alignment",
+      "observed_usage"
+    ],
+    "key_facts": [
+      "Role roster confirms analyst; query observed within 7 days."
+    ],
+    "evidence_refs": [
+      "POL-READER",
+      "OBS-AR-104"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AR-105",
+    "person": "Nora Patel",
+    "role": "data engineer",
+    "entitlement": "warehouse.prod.migration_admin",
+    "review_id": "Q4-DATA",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "elevated_access",
+      "observed_usage"
+    ],
+    "key_facts": [
+      "No use observed in the 60-day telemetry window."
+    ],
+    "evidence_refs": [
+      "POL-ELEVATED",
+      "OBS-AR-105"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AR-106",
+    "person": "Eli Brooks",
+    "role": "data engineer",
+    "entitlement": "warehouse.prod.export_admin",
+    "review_id": "Q4-DATA",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "elevated_access",
+      "observed_usage"
+    ],
+    "key_facts": [
+      "No use observed in the 60-day telemetry window."
+    ],
+    "evidence_refs": [
+      "POL-ELEVATED",
+      "OBS-AR-106",
+      "EX-EXPIRED"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AR-107",
+    "person": "Mateo Ruiz",
+    "role": "analyst",
+    "entitlement": "warehouse.sandbox.builder",
+    "review_id": "Q4-DATA",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "sandbox_scope",
+      "observed_usage"
+    ],
+    "key_facts": [
+      "Sandbox assignment active on snapshot date."
+    ],
+    "evidence_refs": [
+      "POL-SANDBOX",
+      "OBS-AR-107"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AR-108",
+    "person": "Leah Chen",
+    "role": "analyst",
+    "entitlement": "warehouse.prod.legacy_writer",
+    "review_id": "Q4-DATA",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "elevated_access",
+      "observed_usage"
+    ],
+    "key_facts": [
+      "No use observed in the 60-day telemetry window."
+    ],
+    "evidence_refs": [
+      "POL-ELEVATED",
+      "OBS-AR-108"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AR-999",
+    "review_id": "OTHER"
+  }
+]

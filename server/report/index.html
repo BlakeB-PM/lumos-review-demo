@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Access Review Audit Report · Lumos Demo</title>
+  <link rel="stylesheet" href="/report.css">
+  <script src="/report.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Lumos demo home"><span class="brand-mark" aria-hidden="true">✳</span> lumos<span class="brand-divider"></span><span class="brand-section">Access Reviews</span></a>
+    <span class="prototype">Synthetic demo</span>
+  </header>
+  <main>
+    <section class="hero" aria-labelledby="campaign-title">
+      <div>
+        <p class="eyebrow">IDENTITY GOVERNANCE <span> / </span> AUDIT REPORT</p>
+        <h1 id="campaign-title">Q4 Data Platform Access Review</h1>
+        <p class="hero-description">Track access decisions recorded through the personal agent and inspect the evidence behind each receipt.</p>
+      </div>
+      <div class="connection" id="connection" role="status"><span class="dot"></span><span>Connecting</span></div>
+    </section>
+
+    <section class="summary" aria-label="Campaign progress">
+      <div class="progress-card">
+        <div class="progress-top"><div><span class="label">Campaign progress</span><strong id="progress-count">—</strong></div><span id="percentage" class="percentage">—</span></div>
+        <progress id="progress" value="0" max="8" aria-label="Decisions recorded"></progress>
+        <div id="campaign-meta" class="muted meta">Loading reviewer and campaign…</div>
+      </div>
+      <div class="metric"><span class="label">Recorded</span><strong id="recorded">—</strong><span>Decisions with receipts</span></div>
+      <div class="metric"><span class="label">Pending</span><strong id="pending">—</strong><span>Awaiting a decision</span></div>
+      <div class="metric"><span class="label">Needs attention</span><strong id="attention">—</strong><span>Pending write failures</span></div>
+    </section>
+
+    <section class="report" aria-label="Review details">
+      <div class="panel">
+        <div class="panel-header">
+          <div><h2>Review items</h2><p>Compare the original recommendation with the recorded outcome.</p></div>
+          <label class="filter"><span class="sr-only">Filter review items</span><select id="filter"><option value="all">All items</option><option value="recorded">Recorded</option><option value="pending">Pending</option><option value="attention">Needs attention</option></select></label>
+        </div>
+        <div class="table-scroll" role="region" aria-label="Review items table" tabindex="0">
+          <table>
+            <thead><tr><th scope="col">Person / entitlement</th><th scope="col">Original recommendation</th><th scope="col">Recorded decision</th></tr></thead>
+            <tbody id="items"><tr><td colspan="3">Loading review items…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <aside class="panel activity" aria-labelledby="activity-title">
+        <div class="panel-header"><div><h2 id="activity-title">Audit activity</h2><p>Submission attempts in this run</p></div><span class="event-count" id="event-count">0</span></div>
+        <ol id="events"></ol>
+      </aside>
+    </section>
+
+    <footer><span>Local prototype inspired by Lumos · Synthetic data</span><span id="run">Waiting for campaign state</span></footer>
+  </main>
+  <dialog id="detail" aria-labelledby="detail-title">
+    <div class="dialog-top"><div><p class="eyebrow" id="detail-id"></p><h2 id="detail-title"></h2></div><form method="dialog"><button class="close" aria-label="Close item details">×</button></form></div>
+    <div id="detail-body"></div>
+  </dialog>
+</body>
+</html>

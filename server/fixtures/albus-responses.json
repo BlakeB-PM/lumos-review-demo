@@ -1,0 +1,66 @@
+{
+  "AR-105": {
+    "initial": {
+      "question_terms": [
+        "scope",
+        "exception",
+        "approval"
+      ],
+      "status": "answered",
+      "answer": "SEC-217 covers Nora Patel's exact production migration admin grant through November 16. Retain through the approved window.",
+      "proposed_recommendation": "retain",
+      "sources": [
+        "EX-MIGRATION",
+        "POL-ELEVATED"
+      ],
+      "checks_performed": [
+        "Matched named person and exact entitlement",
+        "Checked effective dates against the campaign date"
+      ],
+      "unresolved_issues": []
+    }
+  },
+  "AR-106": {
+    "initial": {
+      "question_terms": [
+        "scope",
+        "exception",
+        "renewal",
+        "approval"
+      ],
+      "status": "needs_context",
+      "answer": "SEC-199 expired October 31. No renewal appears in the authorized evidence.",
+      "sources": [
+        "EX-EXPIRED",
+        "POL-ELEVATED"
+      ],
+      "checks_performed": [
+        "Checked approval expiry"
+      ],
+      "unresolved_issues": [
+        "Current owner intent and valid renewal are unknown."
+      ],
+      "context_request": "Can the owner provide an approved renewal ID covering Eli and the exact production export grant?"
+    },
+    "clarified": {
+      "question_terms": [
+        "scope",
+        "exception",
+        "renewal",
+        "approval"
+      ],
+      "status": "insufficient_evidence",
+      "answer": "The shared claim cannot establish a renewal. Keep the item pending while the owner supplies an authoritative approval.",
+      "sources": [
+        "EX-EXPIRED",
+        "POL-ELEVATED"
+      ],
+      "checks_performed": [
+        "Checked the scoped approval records for a current renewal"
+      ],
+      "unresolved_issues": [
+        "No approved renewal is available."
+      ]
+    }
+  }
+}
