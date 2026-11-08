@@ -7,8 +7,7 @@
     "review_id": "Q4-DATA",
     "snapshot_version": 1,
     "insight_categories": [
-      "role_alignment",
-      "observed_usage"
+      "Role Aligned"
     ],
     "key_facts": [
       "Role roster confirms analyst; query observed within 7 days."
@@ -30,8 +29,7 @@
     "review_id": "Q4-DATA",
     "snapshot_version": 1,
     "insight_categories": [
-      "role_alignment",
-      "observed_usage"
+      "Role Aligned"
     ],
     "key_facts": [
       "Role roster confirms analyst; query observed within 7 days."
@@ -53,8 +51,7 @@
     "review_id": "Q4-DATA",
     "snapshot_version": 1,
     "insight_categories": [
-      "role_alignment",
-      "observed_usage"
+      "Role Aligned"
     ],
     "key_facts": [
       "Role roster confirms analyst; query observed within 7 days."
@@ -76,8 +73,7 @@
     "review_id": "Q4-DATA",
     "snapshot_version": 1,
     "insight_categories": [
-      "role_alignment",
-      "observed_usage"
+      "Role Aligned"
     ],
     "key_facts": [
       "Role roster confirms analyst; query observed within 7 days."
@@ -99,8 +95,7 @@
     "review_id": "Q4-DATA",
     "snapshot_version": 1,
     "insight_categories": [
-      "elevated_access",
-      "observed_usage"
+      "Inactive"
     ],
     "key_facts": [
       "No use observed in the 60-day telemetry window."
@@ -122,8 +117,7 @@
     "review_id": "Q4-DATA",
     "snapshot_version": 1,
     "insight_categories": [
-      "elevated_access",
-      "observed_usage"
+      "Inactive"
     ],
     "key_facts": [
       "No use observed in the 60-day telemetry window."
@@ -146,8 +140,7 @@
     "review_id": "Q4-DATA",
     "snapshot_version": 1,
     "insight_categories": [
-      "sandbox_scope",
-      "observed_usage"
+      "Role Aligned"
     ],
     "key_facts": [
       "Sandbox assignment active on snapshot date."
@@ -169,8 +162,7 @@
     "review_id": "Q4-DATA",
     "snapshot_version": 1,
     "insight_categories": [
-      "elevated_access",
-      "observed_usage"
+      "Unusual Access"
     ],
     "key_facts": [
       "No use observed in the 60-day telemetry window."

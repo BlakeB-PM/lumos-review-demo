@@ -36,6 +36,8 @@ Use `python3` on systems where that is the Python command. The report runs at [1
 
 The report shows progress, original recommendations, recorded decisions and failed attempts. Select a person to inspect the reason, evidence versions and receipt. This read-only prototype is inspired by Lumos Access Reviews and runs on synthetic local data.
 
+The synthetic campaign starts with five **Accept**, one **Reject**, and two **Review** suggestions. The report shows Albus insight categories such as **Role Aligned**, **Inactive**, and **Unusual Access** separately from the suggestion and the reviewer's recorded decision. [Lumos Agentic Access Reviews documentation](https://support.lumos.com/articles/9591496417-agentic-access-reviews-with-ai-driven-decisions)
+
 ![Audit report after five decisions and one stale write](docs/audit-report.png)
 
 ## Start in one message

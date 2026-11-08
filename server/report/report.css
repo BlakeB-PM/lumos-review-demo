@@ -60,6 +60,8 @@ td:nth-child(2) { width: 25%; }
 .pill { display: inline-block; border-radius: 15px; padding: 4px 8px; font-size: 10.5px; font-weight: 720; white-space: nowrap; }
 .retain { color: #205f44; background: #e5f5eb; }
 .revoke { color: #942e55; background: #fce9ef; }
+.review { color: #573095; background: #f2eaff; }
+.insight { color: var(--muted); font-size: 10.5px; margin-top: 3px; }
 .pending { color: #61596a; background: #f0edf2; }
 .warning { color: #81440c; background: #fff0d5; }
 .changed { color: #653bab; font-size: 10px; font-weight: 700; margin-top: 3px; }

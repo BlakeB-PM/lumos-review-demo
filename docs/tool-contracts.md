@@ -13,4 +13,6 @@
 
 A submission reserves its idempotency key for the exact ordered payload within a run. Each item and its audit attempt commit together in an independent SQLite transaction. Replaying the same key and payload returns the saved receipts and errors and can finish work interrupted between items. A changed payload needs a new key. An item can have only one recorded decision. A stale write returns refresh_required with the current snapshot. A reset invalidates earlier run IDs, including those of submissions interrupted between items. Keep pending items out of the decision payload.
 
+Original recommendation outcomes are `accept`, `reject`, and `review`, following Lumos's documented Albus suggestions. Insight categories explain the suggestion. The demo submission contract uses `retain` and `revoke` for the two supported reviewer decisions. The report labels them **Approve** and **Reject**. An item awaiting a human decision remains **Pending**, including when Albus suggests **Review**. [Lumos reviewer workflow](https://support.lumos.com/articles/8143225870-reviewing-user-access-in-lumos)
+
 Source IDs and versions must be authorized for the specific item. The demo validates citation scope and availability. The reviewer verifies that the cited material supports the proposed decision.

@@ -1,57 +1,57 @@
 [
   {
     "item_id": "AR-101",
-    "outcome": "retain",
+    "outcome": "accept",
     "basis": "Assigned analytics role and recent query activity.",
     "snapshot_version": 1,
     "recorded_at": "2026-11-05T12:00:00Z"
   },
   {
     "item_id": "AR-102",
-    "outcome": "retain",
+    "outcome": "accept",
     "basis": "Assigned analytics role and recent query activity.",
     "snapshot_version": 1,
     "recorded_at": "2026-11-05T12:00:00Z"
   },
   {
     "item_id": "AR-103",
-    "outcome": "retain",
+    "outcome": "accept",
     "basis": "Assigned analytics role and recent query activity.",
     "snapshot_version": 1,
     "recorded_at": "2026-11-05T12:00:00Z"
   },
   {
     "item_id": "AR-104",
-    "outcome": "retain",
+    "outcome": "accept",
     "basis": "Assigned analytics role and recent query activity.",
     "snapshot_version": 1,
     "recorded_at": "2026-11-05T12:00:00Z"
   },
   {
     "item_id": "AR-105",
-    "outcome": "revoke",
+    "outcome": "reject",
     "basis": "Low observed use and no exception in the original recommendation snapshot.",
     "snapshot_version": 1,
     "recorded_at": "2026-11-05T12:00:00Z"
   },
   {
     "item_id": "AR-106",
-    "outcome": "revoke",
-    "basis": "Low observed use and the recorded exception has expired.",
+    "outcome": "review",
+    "basis": "Low observed use and the prior approval expired. Confirm whether there is a current renewal or ongoing business need.",
     "snapshot_version": 1,
     "recorded_at": "2026-11-05T12:00:00Z"
   },
   {
     "item_id": "AR-107",
-    "outcome": "retain",
+    "outcome": "accept",
     "basis": "Current sandbox assignment and recent build activity.",
     "snapshot_version": 1,
     "recorded_at": "2026-11-05T12:00:00Z"
   },
   {
     "item_id": "AR-108",
-    "outcome": "revoke",
-    "basis": "Legacy grant has no documented business owner or active approval.",
+    "outcome": "review",
+    "basis": "Legacy grant has no documented business owner or active approval. Confirm whether it still serves a current workload.",
     "snapshot_version": 1,
     "recorded_at": "2026-11-05T12:00:00Z"
   }

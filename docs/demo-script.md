@@ -5,10 +5,10 @@ Start the report with `python server/src/main.py report --open` and keep it open
 | Time | Say or do | Show |
 | --- | --- | --- |
 | 0:00 | “Help me complete my access review.” | A clean run, Dana's assigned campaign, eight pending items, and the report at 0 of 8 recorded. |
-| 0:45 | “Which four can I review together, and what evidence backs them?” | AR-101 through AR-104, role policy and individual grant and usage records. |
-| 1:30 | “What changes the recommendation on Nora? Where does that leave Eli?” | Current EX-MIGRATION on the exact production grant, expired EX-EXPIRED on Eli's grant, and the pending owner question. |
+| 0:45 | “Which four can I review together, and what evidence backs them?” | AR-101 through AR-104 share an Accept suggestion and Role Aligned insight. Show the role policy and individual usage records. |
+| 1:30 | “What changes the recommendation on Nora? Where does that leave Eli?” | Nora starts at Reject. EX-MIGRATION covers her exact grant. Eli starts at Review. EX-EXPIRED and the missing renewal explain why he stays pending. |
 | 2:30 | Include AR-107 in the proposed version 1 batch. Leave AR-106 and AR-108 pending. After the proposal is visible, run `python .\server\src\main.py advance-snapshot` in PowerShell. | The batch still displays version 1 of AR-107. |
-| 3:00 | “I confirm the exact batch you showed.” | Switch to the report. It updates to five recorded, three pending, and one needing attention. Click Nora's name to show the original revoke recommendation, recorded retain decision, and cited exception. |
+| 3:00 | “I confirm the exact batch you showed.” | Switch to the report. It updates to five recorded, three pending, and one needing attention. Click Nora's name to show Albus's original Reject suggestion, the reviewer's recorded Approve decision, and the cited exception. |
 | 3:45 | “Retry the identical batch with the same key, then refresh AR-107 and show me what changed.” | Same receipt IDs, original recommendation preserved, new owner closure, and a new proposal awaiting confirmation. |
 | 4:30 | “Show me the audit record and what remains pending.” | Show the blocked write in Audit activity and unchanged receipt count after the retry. Use the Pending filter to isolate open work. |
 

@@ -90,6 +90,12 @@ def run(state, report):
         items = page["records"] + tool("get_review_items", **review, cursor=4)["records"]
         assert len({i["person"] for i in items}) == 6
         assert len({i["id"] for i in items}) == 8
+        assert [i["original_recommendation"]["outcome"] for i in items] == [
+            "accept", "accept", "accept", "accept", "reject", "review", "accept", "review",
+        ]
+        assert {category for i in items for category in i["insight_categories"]} == {
+            "Role Aligned", "Inactive", "Unusual Access",
+        }
         initial_report = report()
         assert initial_report["run_id"] == run_id
         assert len(initial_report["items"]) == 8
@@ -117,7 +123,7 @@ def run(state, report):
         operator(state, "advance-snapshot")
         result = tool("submit_decisions", **batch, reviewer_confirmed=True)
         assert [r["status"] for r in result["results"]] == ["recorded"] * 5 + ["refresh_required"]
-        assert result["results"][4]["original_recommendation"]["outcome"] == "revoke"
+        assert result["results"][4]["original_recommendation"]["outcome"] == "reject"
         assert result["results"][4]["evidence"][-1] == {"id": "EX-MIGRATION", "version": 1}
         assert tool("submit_decisions", **batch, reviewer_confirmed=True) == result
         audit = report()
@@ -125,7 +131,7 @@ def run(state, report):
         assert audit["events"][0]["status"] == "refresh_required"
         nora = next(i for i in audit["items"] if i["id"] == "AR-105")
         assert nora["receipt"] == result["results"][4]
-        assert nora["original_recommendation"]["outcome"] == "revoke"
+        assert nora["original_recommendation"]["outcome"] == "reject"
         exception = next(s for s in nora["evidence_sources"] if s["id"] == "EX-MIGRATION")
         assert exception["version"] == 1 and "SEC-217" in exception["excerpt"]
         assert "different payload" in tool("submit_decisions", **(batch | {"decisions": decisions[:1]}),

@@ -4,7 +4,6 @@ const byId = (id) => document.getElementById(id);
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
 })[char]);
-const titleCase = (value) => value[0].toUpperCase() + value.slice(1);
 const formatTime = (value) => new Intl.DateTimeFormat(undefined, {
   hour: "numeric", minute: "2-digit", second: "2-digit",
 }).format(new Date(value));
@@ -17,8 +16,20 @@ function pill(style, text) {
   return `<span class="pill ${style}">${escapeHtml(text)}</span>`;
 }
 
-function outcome(value) {
-  return pill(value === "retain" ? "retain" : "revoke", titleCase(value));
+function suggestion(value) {
+  return {
+    accept: pill("retain", "Accept"),
+    reject: pill("revoke", "Reject"),
+    review: pill("review", "Review"),
+  }[value];
+}
+
+function decisionLabel(value) {
+  return value === "retain" ? "Approve" : "Reject";
+}
+
+function decision(value) {
+  return pill(value === "retain" ? "retain" : "revoke", decisionLabel(value));
 }
 
 function needsAttention(item) {
@@ -33,15 +44,17 @@ function renderRows() {
   byId("items").innerHTML = items.map((item) => {
     const original = item.original_recommendation.outcome;
     const recorded = item.receipt?.outcome;
-    const decision = recorded ? outcome(recorded) : needsAttention(item)
+    const result = recorded ? decision(recorded) : needsAttention(item)
       ? pill("warning", item.latest_attempt.status === "refresh_required" ? "Refresh required" : "Write failed")
       : pill("pending", "Pending");
-    const changed = recorded && recorded !== original ? '<div class="changed">Differs from recommendation</div>' : "";
+    const expected = { accept: "retain", reject: "revoke" }[original];
+    const changed = recorded && expected && recorded !== expected ? '<div class="changed">Differs from suggestion</div>' : "";
+    const insights = escapeHtml(item.insight_categories.join(" · "));
     return `<tr>
       <td><button type="button" class="item-button" data-item="${escapeHtml(item.id)}"
         aria-label="${escapeHtml(item.person + ", " + item.entitlement + ", audit details")}">${escapeHtml(item.person)}</button>
         <div class="entitlement">${escapeHtml(item.entitlement)}</div></td>
-      <td>${outcome(original)}</td><td>${decision}${changed}</td>
+      <td>${suggestion(original)}<div class="insight">${insights}</div></td><td>${result}${changed}</td>
     </tr>`;
   }).join("") || '<tr><td class="empty" colspan="3">No items in this view.</td></tr>';
 }
@@ -52,7 +65,7 @@ function renderEvents() {
   byId("events").innerHTML = report.events.map((event) => {
     const recorded = event.status === "recorded";
     const item = items.get(event.item_id);
-    const message = recorded ? `${titleCase(event.outcome)} decision recorded`
+    const message = recorded ? `${decisionLabel(event.outcome)} decision recorded`
       : event.status === "refresh_required" ? `Write blocked · snapshot v${event.current_snapshot_version} required`
       : event.status.replaceAll("_", " ");
     const receipt = recorded ? ` · Receipt ${event.receipt_id.slice(0, 8)}` : "";
@@ -72,11 +85,12 @@ function renderDetail() {
   const section = (title, body) => `<section class="detail-section"><h3>${title}</h3>${body}</section>`;
   byId("detail-id").textContent = `${item.id} · SNAPSHOT V${item.snapshot_version}`;
   byId("detail-title").textContent = item.person;
-  const original = section("Original recommendation",
-    `${outcome(recommendation.outcome)} <span class="muted">Snapshot v${recommendation.snapshot_version}</span>
+  const original = section("Albus suggestion",
+    `${suggestion(recommendation.outcome)} <span class="muted">Snapshot v${recommendation.snapshot_version}</span>
+    <p class="insight">${escapeHtml(item.insight_categories.join(" · "))}</p>
     <p>${escapeHtml(recommendation.basis)}</p>`);
   const result = receipt ? section("Recorded decision",
-    `${outcome(receipt.outcome)}<p>${escapeHtml(receipt.reason)}</p>
+    `${decision(receipt.outcome)}<p>${escapeHtml(receipt.reason)}</p>
     <p class="muted">Reviewer ${escapeHtml(report.reviewer.name)} · Snapshot v${receipt.snapshot_version}</p>
     <p class="muted">Receipt <code>${escapeHtml(receipt.receipt_id)}</code></p>
     <p class="muted">Remediation: no access changes in this simulation</p>`)
