@@ -1,6 +1,6 @@
 # Lumos access review demo
 
-A synthetic Q4 warehouse access review for Codex desktop. Codex reasons over a personal workspace and calls a local Python stdio MCP server for assigned items, evidence and decisions. A browser report shows the same SQLite state as decisions land. The demo needs Python 3.10+ and uses the standard library.
+A synthetic Q4 warehouse access review for Codex desktop. Codex uses a local MCP server for assigned items, evidence and decisions. An interactive browser workspace reads and writes the same SQLite review state. The demo needs Python 3.10+ and uses the standard library.
 
 ## Try it
 
@@ -34,7 +34,9 @@ python server/src/main.py report --open
 
 Use `python3` on systems where that is the Python command. The report runs at [127.0.0.1:8765](http://127.0.0.1:8765/) and refreshes about once a second. Keep the process running during the demo. Use `--port` if 8765 is occupied. If you pass `--state` to the MCP server, point the report at the same file.
 
-The report shows progress, original recommendations, recorded decisions and failed attempts. Select a person to inspect the reason, evidence versions and receipt. This read-only prototype is inspired by Lumos Access Reviews and runs on synthetic local data.
+The workspace follows Lumos's published permissions review layout. Use **Unreviewed**, **Reviewed**, or **All Permissions**, search the table, and approve or reject a permission with the row controls. Select multiple rows for a bulk decision. Each write requires an audit note and an explicit confirmation. **Audit Activity** shows receipts and blocked attempts from both **Codex MCP** and **Review workspace**. Click a person or the evidence icon to see the suggestion, evidence, and receipt.
+
+To demo the round trip, submit the first batch in Codex, then view Nora's receipt in **Reviewed**. Resolve Mateo's refreshed sandbox item in the browser and ask Codex for the latest status. Both surfaces show the same receipt. The workspace uses synthetic data and does not perform access remediation. [Lumos reviewer workflow](https://support.lumos.com/articles/8143225870-reviewing-user-access-in-lumos)
 
 The synthetic campaign starts with five **Accept**, one **Reject**, and two **Review** suggestions. The report shows Albus insight categories such as **Role Aligned**, **Inactive**, and **Unusual Access** separately from the suggestion and the reviewer's recorded decision. [Lumos Agentic Access Reviews documentation](https://support.lumos.com/articles/9591496417-agentic-access-reviews-with-ai-driven-decisions)
 

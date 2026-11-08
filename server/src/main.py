@@ -170,6 +170,6 @@ if __name__ == "__main__":
     elif args.action == "report":
         from report import serve_report
 
-        serve_report(reviews, args.port, args.open)
+        serve_report(reviews, args.port, args.open, TOOLS["submit_decisions"][1], validate)
     else:
         serve(reviews)

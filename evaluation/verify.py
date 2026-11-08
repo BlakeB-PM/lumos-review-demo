@@ -6,7 +6,8 @@ import sys
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from urllib.request import urlopen
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
 
 SERVER = Path(__file__).resolve().parents[1] / "server/src/main.py"
 
@@ -68,13 +69,20 @@ def browser_report(state):
                     assert response.headers["Cache-Control"] == "no-store"
                     return json.load(response)
 
-            yield snapshot
+            def record(payload, origin=None):
+                request = Request(url + "api/decisions", data=json.dumps(payload).encode(),
+                                  headers={"Content-Type": "application/json",
+                                           "Origin": origin or url.rstrip("/")})
+                with urlopen(request, timeout=5) as response:
+                    return json.load(response)
+
+            yield snapshot, record
         finally:
             process.terminate()
             process.wait(timeout=10)
 
 
-def run(state, report):
+def run(state, report, record):
     review = {"review_id": "Q4-DATA"}
     with client(state) as (rpc, tool):
         assert len(rpc("tools/list")["tools"]) == 7
@@ -151,10 +159,20 @@ def run(state, report):
                      "reason": "Owner closed the sandbox assignment.", "evidence_refs": ["OBS-AR-107-V2"]}
         forbidden = {**corrected, "item_id": "AR-999"}
         wrong_scope = {**corrected, "item_id": "AR-108", "snapshot_version": 1}
-        result = tool("submit_decisions", **review, reviewer_confirmed=True, idempotency_key="refreshed",
-                      decisions=[corrected, forbidden, wrong_scope], run_id=run_id)["results"]
+        browser_batch = {**review, "reviewer_confirmed": True, "idempotency_key": "refreshed",
+                         "decisions": [corrected, forbidden, wrong_scope], "run_id": run_id}
+        try:
+            record(browser_batch, origin="https://example.com")
+        except HTTPError as error:
+            assert error.code == 403
+        else:
+            raise AssertionError("Cross-origin review write was accepted")
+        result = record(browser_batch)["results"]
         assert [r["status"] for r in result] == ["recorded", "item_unavailable", "invalid_evidence"]
         assert result[0]["remediation_status"] == "not_performed_in_simulation"
+        assert result[0]["client"] == "local_review_ui"
+        assert record(browser_batch)["results"] == result
+        assert result[0] in tool("get_review_status", **review)["recorded"]
 
     with client(state, "--simulated-albus") as (rpc, tool):
         assert len(rpc("tools/list")["tools"]) == 8
@@ -201,7 +219,7 @@ if __name__ == "__main__":
     scratch.mkdir(parents=True, exist_ok=True)
     with TemporaryDirectory(dir=scratch) as temp:
         state = Path(temp) / "test.sqlite3"
-        with browser_report(state) as report:
-            run(state, report)
+        with browser_report(state) as (report, record):
+            run(state, report, record)
     print("PASS: stdio discovery, reviewer scope, evidence, confirmation, partial/stale writes, "
           "idempotency across process restarts, phrase-triggered clean runs, simulation and live audit report.")

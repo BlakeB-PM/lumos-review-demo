@@ -11,6 +11,10 @@ const formatTime = (value) => new Intl.DateTimeFormat(undefined, {
 let report;
 let signature;
 let selectedItem;
+let view = "all";
+let attentionOnly = false;
+const selected = new Set();
+let draft;
 
 function pill(style, text) {
   return `<span class="pill ${style}">${escapeHtml(text)}</span>`;
@@ -38,9 +42,7 @@ function needsAttention(item) {
 
 function renderRows() {
   if (!report) return;
-  const filter = byId("filter").value;
-  const items = report.items.filter((item) =>
-    filter === "all" || item.status === filter || (filter === "attention" && needsAttention(item)));
+  const items = visibleItems();
   byId("items").innerHTML = items.map((item) => {
     const original = item.original_recommendation.outcome;
     const recorded = item.receipt?.outcome;
@@ -50,13 +52,62 @@ function renderRows() {
     const expected = { accept: "retain", reject: "revoke" }[original];
     const changed = recorded && expected && recorded !== expected ? '<div class="changed">Differs from suggestion</div>' : "";
     const insights = escapeHtml(item.insight_categories.join(" · "));
+    const id = escapeHtml(item.id);
+    const person = escapeHtml(item.person);
+    const actions = recorded
+      ? `${result} <span class="channel">${channel(item.receipt.client)}</span>`
+      : `<button type="button" class="action approve" data-action="retain" data-id="${id}" aria-label="Approve ${person}" title="Approve">✓</button>
+         <button type="button" class="action reject" data-action="revoke" data-id="${id}" aria-label="Reject ${person}" title="Reject">×</button>
+         ${needsAttention(item) ? result : ""}`;
     return `<tr>
-      <td><button type="button" class="item-button" data-item="${escapeHtml(item.id)}"
-        aria-label="${escapeHtml(item.person + ", " + item.entitlement + ", audit details")}">${escapeHtml(item.person)}</button>
-        <div class="entitlement">${escapeHtml(item.entitlement)}</div></td>
-      <td>${suggestion(original)}<div class="insight">${insights}</div></td><td>${result}${changed}</td>
+      <td>${recorded ? "" : `<input type="checkbox" data-select="${id}" aria-label="Select ${person}, ${escapeHtml(item.entitlement)}" ${selected.has(item.id) ? "checked" : ""}>`}</td>
+      <td><button type="button" class="item-button" data-item="${id}">${person}</button>
+        <div class="subline">${escapeHtml(item.role)} · ${id}</div></td>
+      <td><div class="entitlement"><span class="permission-dot" aria-hidden="true">●</span>${escapeHtml(item.entitlement)}</div><div class="subline">Permission · v${item.snapshot_version}</div></td>
+      <td>${suggestion(original)}<div class="insight">${insights}</div></td>
+      <td><span class="assignee" title="${escapeHtml(report.reviewer.name)}" aria-label="${escapeHtml(report.reviewer.name)}">DM</span></td>
+      <td><div class="row-actions">${actions}<button type="button" class="action note" data-item="${id}"
+        aria-label="View evidence and audit note for ${person}" title="Evidence and audit note">▤</button></div>${changed}</td>
     </tr>`;
-  }).join("") || '<tr><td class="empty" colspan="3">No items in this view.</td></tr>';
+  }).join("") || '<tr><td class="empty" colspan="6">No permissions match this view.</td></tr>';
+  renderSelection();
+}
+
+function visibleItems() {
+  const query = byId("search").value.trim().toLowerCase();
+  return report.items.filter((item) =>
+    (view === "all" || item.status === view) && (!attentionOnly || needsAttention(item)) &&
+    [item.person, item.entitlement, item.id, item.original_recommendation.outcome, ...item.insight_categories]
+      .some((value) => value.toLowerCase().includes(query)));
+}
+
+function renderSelection() {
+  const eligible = visibleItems().filter((item) => !item.receipt);
+  const count = eligible.filter((item) => selected.has(item.id)).length;
+  const all = byId("select-all");
+  all.disabled = eligible.length === 0;
+  all.checked = count > 0 && count === eligible.length;
+  all.indeterminate = count > 0 && count < eligible.length;
+  byId("bulk").hidden = count === 0;
+  byId("selection-count").textContent = `${count} selected`;
+}
+
+function channel(client) {
+  return client === "local_review_ui" ? "Review workspace" : "Codex MCP";
+}
+
+function setView(next) {
+  view = next;
+  selected.clear();
+  attentionOnly = false;
+  byId("attention").setAttribute("aria-pressed", "false");
+  byId("review").hidden = view === "audit";
+  byId("audit").hidden = view !== "audit";
+  for (const tab of document.querySelectorAll("[data-view]")) {
+    if (tab.dataset.view === view) tab.setAttribute("aria-current", "page");
+    else tab.removeAttribute("aria-current");
+  }
+  renderRows();
 }
 
 function renderEvents() {
@@ -71,9 +122,10 @@ function renderEvents() {
     const receipt = recorded ? ` · Receipt ${event.receipt_id.slice(0, 8)}` : "";
     return `<li><span aria-hidden="true" class="event-icon ${recorded ? "retain" : "warning"}">${recorded ? "✓" : "!"}</span>
       <div><div class="event-title">${escapeHtml(message)}</div>
-      <div class="event-meta">${escapeHtml(item.person + " · " + item.id + receipt)}<br>
-      ${escapeHtml(formatTime(event.attempted_at))} · Personal agent</div></div></li>`;
-  }).join("") || '<li class="empty">No submission attempts yet. Decisions will appear here as the agent records them.</li>';
+      <button type="button" class="item-button" data-item="${escapeHtml(item.id)}">${escapeHtml(item.person)}</button>
+      <div class="event-meta">${escapeHtml(item.id + receipt)} · ${escapeHtml(formatTime(event.attempted_at))}
+      · ${channel(event.client)}</div></div></li>`;
+  }).join("") || '<li class="empty">No submission attempts yet. Decisions from either surface will appear here.</li>';
 }
 
 function renderDetail() {
@@ -91,12 +143,12 @@ function renderDetail() {
     <p>${escapeHtml(recommendation.basis)}</p>`);
   const result = receipt ? section("Recorded decision",
     `${decision(receipt.outcome)}<p>${escapeHtml(receipt.reason)}</p>
-    <p class="muted">Reviewer ${escapeHtml(report.reviewer.name)} · Snapshot v${receipt.snapshot_version}</p>
+    <p class="muted">Reviewer ${escapeHtml(report.reviewer.name)} · ${channel(receipt.client)} · Snapshot v${receipt.snapshot_version}</p>
     <p class="muted">Receipt <code>${escapeHtml(receipt.receipt_id)}</code></p>
     <p class="muted">Remediation: no access changes in this simulation</p>`)
     : section("Decision status", pill(attempt ? "warning" : "pending", attempt
       ? attempt.status === "refresh_required" ? "Refresh required" : "Write failed" : "Awaiting decision"));
-  const refs = receipt ? receipt.evidence : item.evidence_refs.map((id) => ({ id }));
+  const refs = receipt ? receipt.evidence : item.evidence_sources;
   const sources = new Map(item.evidence_sources.map((source) => [source.id, source]));
   const evidence = section(receipt ? "Evidence on receipt" : "Current evidence",
     refs.map((ref) => {
@@ -114,15 +166,19 @@ function renderDetail() {
 function render() {
   const { items, campaign, reviewer } = report;
   const recorded = items.filter((item) => item.receipt).length;
-  const percent = Math.round(100 * recorded / (items.length || 1));
+  const failures = items.filter(needsAttention).length;
   byId("campaign-title").textContent = campaign.title;
   byId("progress-count").textContent = `${recorded} of ${items.length} recorded`;
-  byId("percentage").textContent = `${percent}%`;
-  byId("progress").max = items.length || 1;
-  byId("progress").value = recorded;
+  byId("total").textContent = items.length;
   byId("recorded").textContent = recorded;
   byId("pending").textContent = items.length - recorded;
-  byId("attention").textContent = items.filter(needsAttention).length;
+  byId("attention").textContent = `${failures} needing attention`;
+  byId("attention").hidden = !failures;
+  if (!failures) {
+    attentionOnly = false;
+    byId("attention").setAttribute("aria-pressed", "false");
+  }
+  for (const item of items) if (item.receipt) selected.delete(item.id);
   byId("campaign-meta").textContent = `${campaign.id} · Reviewer ${reviewer.name} · As of ${campaign.as_of}`;
   byId("run").textContent = `Demo run ${report.run_id.slice(0, 8)} · No live remediation`;
   renderRows();
@@ -144,8 +200,11 @@ async function refresh() {
     if (nextSignature !== signature) {
       const next = JSON.parse(nextSignature);
       if (report && next.run_id !== report.run_id) {
-        byId("filter").value = "all";
+        byId("search").value = "";
+        byId("notice").hidden = true;
         byId("detail").close();
+        byId("confirm").close();
+        setView("all");
       }
       report = next;
       render();
@@ -159,12 +218,111 @@ async function refresh() {
   }
 }
 
-byId("filter").addEventListener("change", renderRows);
-byId("items").addEventListener("click", (event) => {
+function openDetail(event) {
   const button = event.target.closest("[data-item]");
   if (!button) return;
   selectedItem = button.dataset.item;
   renderDetail();
   byId("detail").showModal();
+}
+
+function openDecision(outcome, items) {
+  if (!items.length) return;
+  draft = { outcome, items, runId: report.run_id, key: crypto.randomUUID() };
+  byId("confirm-title").textContent = `${decisionLabel(outcome)} ${items.length === 1 ? "permission" : `${items.length} permissions`}`;
+  byId("confirm-items").innerHTML = items.map((item) =>
+    `<li><strong>${escapeHtml(item.person)}</strong> · ${escapeHtml(item.entitlement)} · v${item.snapshot_version}</li>`).join("");
+  byId("reason").value = "";
+  byId("confirm-error").textContent = "";
+  byId("evidence-picker").hidden = items.length !== 1;
+  const item = items[0];
+  byId("evidence-options").innerHTML = items.length === 1 ? item.evidence_sources.map((source) =>
+    `<label><input type="checkbox" value="${escapeHtml(source.id)}" ${item.evidence_refs.includes(source.id) ? "checked" : ""}>
+      ${escapeHtml(source.title)} · ${escapeHtml(source.id)} v${source.version}</label>`).join("") : "";
+  byId("confirm").showModal();
+}
+
+async function recordDecision(event) {
+  event.preventDefault();
+  const button = byId("confirm-action");
+  const error = byId("confirm-error");
+  const reason = byId("reason").value.trim();
+  const evidence = Array.from(document.querySelectorAll("#evidence-options input:checked"), (input) => input.value);
+  if (!reason || (draft.items.length === 1 && !evidence.length)) {
+    error.textContent = "Add an audit note and cite at least one evidence source.";
+    return;
+  }
+  const request = {
+    review_id: report.campaign.id, run_id: draft.runId, idempotency_key: draft.key, reviewer_confirmed: true,
+    decisions: draft.items.map((item) => ({
+      item_id: item.id, snapshot_version: item.snapshot_version, outcome: draft.outcome, reason,
+      evidence_refs: draft.items.length === 1 ? evidence : item.evidence_refs,
+    })),
+  };
+  button.disabled = true;
+  error.textContent = "";
+  try {
+    const response = await fetch("/api/decisions", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(request),
+      signal: AbortSignal.timeout(10000),
+    });
+    const result = await response.json();
+    if (request.run_id !== report.run_id) return;
+    if (!response.ok) throw new Error(result.error || "Decision could not be recorded.");
+    const recorded = result.results.filter((entry) => entry.status === "recorded").length;
+    const failures = result.results.filter((entry) => entry.status !== "recorded");
+    for (const entry of result.results) selected.delete(entry.item_id);
+    byId("confirm").close();
+    const notice = byId("notice");
+    notice.textContent = `${recorded} recorded.` + (failures.length
+      ? " " + failures.map((entry) => `${entry.item_id}: ${entry.status.replaceAll("_", " ")}`).join(" · ") : "");
+    notice.hidden = false;
+  } catch (failure) {
+    if (request.run_id === report.run_id) error.textContent = failure.message;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+document.querySelector(".tabs").addEventListener("click", (event) => {
+  const tab = event.target.closest("[data-view]");
+  if (tab) setView(tab.dataset.view);
+});
+byId("search").addEventListener("input", () => { selected.clear(); renderRows(); });
+byId("attention").addEventListener("click", () => {
+  attentionOnly = !attentionOnly;
+  selected.clear();
+  byId("attention").setAttribute("aria-pressed", String(attentionOnly));
+  renderRows();
+});
+byId("clear-selection").addEventListener("click", () => { selected.clear(); renderRows(); });
+byId("select-all").addEventListener("change", (event) => {
+  selected.clear();
+  if (event.target.checked) for (const item of visibleItems()) if (!item.receipt) selected.add(item.id);
+  renderRows();
+});
+byId("items").addEventListener("change", (event) => {
+  const id = event.target.dataset.select;
+  if (!id) return;
+  if (event.target.checked) selected.add(id);
+  else selected.delete(id);
+  renderSelection();
+});
+byId("items").addEventListener("click", (event) => {
+  const action = event.target.closest("[data-action]");
+  if (action) openDecision(action.dataset.action, report.items.filter((item) => item.id === action.dataset.id && !item.receipt));
+  else openDetail(event);
+});
+byId("events").addEventListener("click", openDetail);
+byId("bulk").addEventListener("click", (event) => {
+  const action = event.target.closest("[data-bulk]");
+  if (action) openDecision(action.dataset.bulk, visibleItems().filter((item) => selected.has(item.id) && !item.receipt));
+});
+byId("confirm-form").addEventListener("submit", recordDecision);
+byId("cancel").addEventListener("click", () => {
+  if (!byId("confirm-action").disabled) byId("confirm").close();
+});
+byId("confirm").addEventListener("cancel", (event) => {
+  if (byId("confirm-action").disabled) event.preventDefault();
 });
 refresh();

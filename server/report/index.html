@@ -3,60 +3,79 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Access Review Audit Report · Lumos Demo</title>
+  <title>Access Reviews · Lumos Demo</title>
   <link rel="stylesheet" href="/report.css">
   <script src="/report.js" defer></script>
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="/" aria-label="Lumos demo home"><span class="brand-mark" aria-hidden="true">✳</span> lumos<span class="brand-divider"></span><span class="brand-section">Access Reviews</span></a>
+    <div class="breadcrumb"><strong>lumos<span>✳</span></strong><span> / </span> Access Reviews <span> / </span> <span id="campaign-title">Q4 Data Platform Access Review</span></div>
     <span class="prototype">Synthetic demo</span>
   </header>
   <main>
-    <section class="hero" aria-labelledby="campaign-title">
-      <div>
-        <p class="eyebrow">IDENTITY GOVERNANCE <span> / </span> AUDIT REPORT</p>
-        <h1 id="campaign-title">Q4 Data Platform Access Review</h1>
-        <p class="hero-description">Track access decisions recorded through the personal agent and inspect the evidence behind each receipt.</p>
+    <header class="workspace-header">
+      <div class="app-heading"><div class="app-icon" aria-hidden="true">▱</div><div><h1>Data Warehouse</h1><p id="campaign-meta">Loading review…</p></div></div>
+      <div class="header-tools">
+        <div class="connection" id="connection" role="status"><span class="dot"></span><span>Connecting</span></div>
+        <label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Search" aria-label="Search permissions"></label>
       </div>
-      <div class="connection" id="connection" role="status"><span class="dot"></span><span>Connecting</span></div>
-    </section>
+    </header>
 
-    <section class="summary" aria-label="Campaign progress">
-      <div class="progress-card">
-        <div class="progress-top"><div><span class="label">Campaign progress</span><strong id="progress-count">—</strong></div><span id="percentage" class="percentage">—</span></div>
-        <progress id="progress" value="0" max="8" aria-label="Decisions recorded"></progress>
-        <div id="campaign-meta" class="muted meta">Loading reviewer and campaign…</div>
-      </div>
-      <div class="metric"><span class="label">Recorded</span><strong id="recorded">—</strong><span>Decisions with receipts</span></div>
-      <div class="metric"><span class="label">Pending</span><strong id="pending">—</strong><span>Awaiting a decision</span></div>
-      <div class="metric"><span class="label">Needs attention</span><strong id="attention">—</strong><span>Pending write failures</span></div>
-    </section>
+    <nav class="tabs" aria-label="Access review views">
+      <button type="button" data-view="pending">Unreviewed (<span id="pending">0</span>)</button>
+      <button type="button" data-view="recorded">Reviewed (<span id="recorded">0</span>)</button>
+      <button type="button" data-view="all" aria-current="page">All Permissions (<span id="total">0</span>)</button>
+      <button type="button" data-view="audit">Audit Activity (<span id="event-count">0</span>)</button>
+    </nav>
 
-    <section class="report" aria-label="Review details">
-      <div class="panel">
-        <div class="panel-header">
-          <div><h2>Review items</h2><p>Compare each Albus suggestion and insight with the recorded decision.</p></div>
-          <label class="filter"><span class="sr-only">Filter review items</span><select id="filter"><option value="all">All items</option><option value="recorded">Recorded</option><option value="pending">Pending</option><option value="attention">Needs attention</option></select></label>
+    <section id="review" aria-label="Permissions review">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <span id="progress-count">Loading campaign…</span>
+          <button type="button" id="attention" class="secondary" aria-pressed="false" hidden></button>
         </div>
-        <div class="table-scroll" role="region" aria-label="Review items table" tabindex="0">
-          <table>
-            <thead><tr><th scope="col">Person / entitlement</th><th scope="col">Albus suggestion</th><th scope="col">Recorded decision</th></tr></thead>
-            <tbody id="items"><tr><td colspan="3">Loading review items…</td></tr></tbody>
-          </table>
+        <div id="bulk" class="bulk" hidden>
+          <span id="selection-count"></span>
+          <button type="button" data-bulk="retain" class="action approve" aria-label="Approve selected" title="Approve selected">✓</button>
+          <button type="button" data-bulk="revoke" class="action reject" aria-label="Reject selected" title="Reject selected">×</button>
+          <button type="button" id="clear-selection" class="secondary">Clear</button>
         </div>
       </div>
-      <aside class="panel activity" aria-labelledby="activity-title">
-        <div class="panel-header"><div><h2 id="activity-title">Audit activity</h2><p>Submission attempts in this run</p></div><span class="event-count" id="event-count">0</span></div>
-        <ol id="events"></ol>
-      </aside>
+      <p class="notice" id="notice" role="status" hidden></p>
+      <div class="table-scroll" role="region" aria-label="Permissions review table" tabindex="0">
+        <table>
+          <thead><tr>
+            <th scope="col"><input type="checkbox" id="select-all" aria-label="Select all visible unreviewed permissions" disabled></th>
+            <th scope="col">Employee</th><th scope="col">Permissions</th><th scope="col">Albus Suggestion</th>
+            <th scope="col">Assignee</th><th scope="col">Review Action</th>
+          </tr></thead>
+          <tbody id="items"><tr><td colspan="6">Loading permissions…</td></tr></tbody>
+        </table>
+      </div>
     </section>
 
-    <footer><span>Local prototype inspired by Lumos · Synthetic data</span><span id="run">Waiting for campaign state</span></footer>
+    <section id="audit" class="audit" aria-labelledby="activity-title" hidden>
+      <h2 id="activity-title">Audit activity</h2>
+      <p>Decision receipts and blocked writes from Codex and this workspace.</p>
+      <ol id="events"></ol>
+    </section>
+    <footer><span>Local Lumos access review prototype</span><span id="run">Waiting for campaign state</span></footer>
   </main>
-  <dialog id="detail" aria-labelledby="detail-title">
+
+  <dialog id="detail" class="drawer" aria-labelledby="detail-title">
     <div class="dialog-top"><div><p class="eyebrow" id="detail-id"></p><h2 id="detail-title"></h2></div><form method="dialog"><button class="close" aria-label="Close item details">×</button></form></div>
     <div id="detail-body"></div>
+  </dialog>
+  <dialog id="confirm" aria-labelledby="confirm-title">
+    <form id="confirm-form">
+      <div class="dialog-top"><h2 id="confirm-title"></h2><button type="button" id="cancel" class="close" aria-label="Cancel decision">×</button></div>
+      <ul id="confirm-items"></ul>
+      <fieldset id="evidence-picker" hidden><legend>Evidence to cite</legend><div id="evidence-options"></div></fieldset>
+      <label class="note-label" for="reason">Audit note</label>
+      <textarea id="reason" rows="3" maxlength="800" required placeholder="Explain why this access should be kept or removed."></textarea>
+      <p id="confirm-error" class="error" role="alert"></p>
+      <button class="primary" id="confirm-action" type="submit">Record decision</button>
+    </form>
   </dialog>
 </body>
 </html>

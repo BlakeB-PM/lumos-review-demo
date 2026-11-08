@@ -10,7 +10,7 @@ flowchart LR
     S -->|Scoped item and evidence| A[Optional scripted Ask Albus]
     A -->|Cited investigation| S
     S -->|Version checks and per-item transactions| D[(SQLite audit and decisions)]
-    D -->|Read-only live view| R[Browser audit report]
+    R[Browser review workspace] <-->|Review state and decisions| S
 ~~~
 
 ~~~mermaid

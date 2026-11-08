@@ -196,7 +196,7 @@ class Reviews:
                 item_id = item["id"]
                 receipt = receipts.get(item_id)
                 row = self.item_record(db, item, "recorded" if receipt else "pending")
-                refs = receipt["evidence"] if receipt else [{"id": ref} for ref in row["evidence_refs"]]
+                refs = receipt["evidence"] if receipt else [{"id": ref} for ref in self.sources]
                 sources = []
                 for ref in refs:
                     source = self.source_for(db, ref["id"], item_id)
@@ -242,7 +242,8 @@ class Reviews:
         matches.sort(key=lambda entry: (-entry[0], entry[1]))
         return {"review_id": review_id, "item_id": item_id, "records": [m[2] for m in matches[:limit]]}
 
-    def submit_decisions(self, review_id, decisions, idempotency_key, reviewer_confirmed, run_id):
+    def submit_decisions(self, review_id, decisions, idempotency_key, reviewer_confirmed, run_id,
+                         client="local_mcp_demo"):
         self.campaign(review_id)
         if not reviewer_confirmed:
             raise ValueError("Obtain explicit reviewer confirmation for this exact batch.")
@@ -250,6 +251,8 @@ class Reviews:
         if len(ids) != len(set(ids)):
             raise ValueError("Each item must appear only once in the batch.")
         payload = json.dumps([review_id, decisions], sort_keys=True, separators=(",", ":"))
+        if client != "local_mcp_demo":
+            payload = f"{client}:{payload}"
         fingerprint = hashlib.sha256(payload.encode()).hexdigest()
         with self.db(write=True) as db:
             self.require_current_run(db, run_id)
@@ -268,16 +271,16 @@ class Reviews:
                 if previous:
                     results.append(json.loads(previous[0]))
                     continue
-                result = self.record_decision(db, review_id, decision)
+                result = self.record_decision(db, review_id, decision, client)
                 db.execute("INSERT INTO attempts(batch_key, item_id, result) VALUES (?, ?, ?)",
                            (idempotency_key, item_id, json.dumps(result)))
                 results.append(result)
         return {"results": results, "atomicity": "per_item"}
 
-    def record_decision(self, db, review_id, decision):
+    def record_decision(self, db, review_id, decision, client):
         item_id = decision["item_id"]
         item = self.items.get(item_id)
-        result = {"item_id": item_id, "attempted_at": utc_now()}
+        result = {"item_id": item_id, "attempted_at": utc_now(), "client": client}
         if item is None or item["review_id"] != review_id:
             return {**result, "status": "item_unavailable"}
         version = self.version(db, item_id)
@@ -298,7 +301,7 @@ class Reviews:
             if row is None or json.loads(row[0])["snapshot_version"] != version:
                 return {**result, "status": "invalid_investigation"}
         receipt = {**result, "status": "recorded", "receipt_id": str(uuid4()),
-                   "review_id": review_id, "reviewer_id": REVIEWER, "client": "local_mcp_demo",
+                   "review_id": review_id, "reviewer_id": REVIEWER,
                    "authority": "reviewer_confirmation_reported_by_client",
                    "snapshot_version": version, "outcome": decision["outcome"],
                    "reason": decision["reason"], "remediation_status": REMEDIATION,
