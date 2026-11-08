@@ -19,7 +19,7 @@ Hosted Work uses an installed custom MCP plugin. The Codex stdio registration do
    ```
 
 3. In [ChatGPT Plugins](https://chatgpt.com/#settings/Connectors), add a custom MCP server named **Lumos Access Reviews**, select **Tunnel**, and choose that workspace's tunnel. For this isolated synthetic demo, use workspace-scoped tunnel access and no additional upstream authentication. Review the discovered tools and install the plugin. [OpenAI's custom MCP plugin setup](https://developers.openai.com/plugins/deploy/connect-chatgpt)
-4. In a fresh **Work** chat, select the plugin via `@`, attach the [synthetic reviewer inbox](../personal-workspace/context/reviewer-inbox.md), and say **Help me complete my access review.** The connector provides workflow instructions during MCP initialization. If the host does not use those instructions automatically, attach the reviewer skill or include its instructions in the plugin. Verify discovery with “Show my assigned access reviews” before trying a write. Confirm that the workspace allows the record tool, then follow the [demo script](demo-script.md).
+4. In a fresh **Work** chat, select the plugin via `@`, attach [Dana’s synthetic sales handoff](../personal-workspace/context/sales-handoff.md) to the chat, and say **Help me complete my access review.** Keep the handoff in the chat; do not add it to the connector. If the host does not use the MCP initialization instructions, attach the reviewer skill or include its instructions in the plugin. Follow the [demo script](demo-script.md).
 
 The tunnel needs to stay running during the demo. The tool caller is a fixed synthetic reviewer. Use a separate checkout or state file for each independent rehearsal. The browser report must use the same state path as the connector.
 
@@ -31,7 +31,7 @@ Generate a local plugin with the MCP connector and reviewer skill. The archive u
 python scripts/package-cowork.py lumos-cowork.zip
 ```
 
-In Claude Desktop, open **Cowork → Customize → Plugins**, upload the archive, and enable the plugin. Attach the synthetic reviewer inbox to the task and use the same reviewer prompt. [Claude local connector support](https://support.claude.com/en/articles/11725091-when-to-use-desktop-and-web-connectors) · [Claude plugin setup](https://support.claude.com/en/articles/13837440-use-plugins-in-claude)
+In Claude Desktop, open **Cowork → Customize → Plugins**, upload the archive, and enable the plugin. Attach the same sales handoff to the chat and use the same reviewer prompt. [Claude local connector support](https://support.claude.com/en/articles/11725091-when-to-use-desktop-and-web-connectors) · [Claude plugin setup](https://support.claude.com/en/articles/13837440-use-plugins-in-claude)
 
 ## Browser and reset
 
@@ -39,4 +39,4 @@ Start the product workspace with `python server/src/main.py report --open`. Run 
 
 ## Confirm the installed host behavior
 
-In each host, verify read discovery, evidence search, the clarifying question, explicit proposal confirmation, a receipt in the product, and a product decision visible back in the assistant. Native question or approval controls depend on the host and workspace configuration. The flow supports ordinary chat questions and confirmations when those controls are unavailable.
+In each host, verify that the assistant finds the two Active Directory permissions, shows the evidence-backed proposal, asks for confirmation, and records decisions visible in the browser. Native approval controls depend on the host and workspace configuration; ordinary chat confirmation also works.

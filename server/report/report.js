@@ -11,7 +11,7 @@ const formatTime = (value) => new Intl.DateTimeFormat(undefined, {
 let report;
 let signature;
 let selectedItem;
-let view = "all";
+let view = "pending";
 let attentionOnly = false;
 const selected = new Set();
 let draft;
@@ -22,9 +22,9 @@ function pill(style, text) {
 
 function suggestion(value) {
   return {
-    accept: pill("retain", "Accept"),
-    reject: pill("revoke", "Reject"),
-    review: pill("review", "Review"),
+    accept: '<span class="suggestion retain">Accept</span>',
+    reject: '<span class="suggestion revoke">Reject</span>',
+    review: '<span class="suggestion review">Review</span>',
   }[value];
 }
 
@@ -50,33 +50,44 @@ function renderRows() {
       ? pill("warning", item.latest_attempt.status === "refresh_required" ? "Refresh required" : "Write failed")
       : pill("pending", "Pending");
     const expected = { accept: "retain", reject: "revoke" }[original];
-    const changed = recorded && expected && recorded !== expected ? '<div class="changed">Differs from suggestion</div>' : "";
-    const insights = escapeHtml(item.insight_categories.join(" · "));
+    const changed = recorded && expected && recorded !== expected
+      ? '<div class="changed">Overrides Albus</div>' : "";
+    const insights = item.insight_categories.map((label) => pill(
+      label === "Role Aligned" ? "retain" : ["Overprivileged", "Terminated"].includes(label) ? "revoke" : "review", label
+    )).join(" ");
     const id = escapeHtml(item.id);
     const person = escapeHtml(item.person);
+    const permission = escapeHtml(item.entitlement);
+    const label = `${person} · ${permission}`;
+    const tour = report.campaign.id === "AD-REVIEW";
     const actions = recorded
-      ? `${result} <span class="channel">${channel(item.receipt.client)}</span>`
-      : `<button type="button" class="action approve" data-action="retain" data-id="${id}" aria-label="Approve ${person}" title="Approve">✓</button>
-         <button type="button" class="action reject" data-action="revoke" data-id="${id}" aria-label="Reject ${person}" title="Reject">×</button>
+      ? result
+      : `<button type="button" class="action approve" data-action="retain" data-id="${id}" aria-label="Approve ${label}" title="Approve">✓</button>
+         <button type="button" class="action reject" data-action="revoke" data-id="${id}" aria-label="Reject ${label}" title="Reject">×</button>
          ${needsAttention(item) ? result : ""}`;
     return `<tr>
       <td>${recorded ? "" : `<input type="checkbox" data-select="${id}" aria-label="Select ${person}, ${escapeHtml(item.entitlement)}" ${selected.has(item.id) ? "checked" : ""}>`}</td>
-      <td><button type="button" class="item-button" data-item="${id}">${person}</button>
-        <div class="subline">${escapeHtml(item.role)} · ${id}</div></td>
-      <td><div class="entitlement"><span class="permission-dot" aria-hidden="true">●</span>${escapeHtml(item.entitlement)}</div><div class="subline">Permission · v${item.snapshot_version}</div></td>
-      <td>${suggestion(original)}<div class="insight">${insights}</div></td>
-      <td><span class="assignee" title="${escapeHtml(report.reviewer.name)}" aria-label="${escapeHtml(report.reviewer.name)}">DM</span></td>
+      <td><button type="button" class="item-button" data-item="${id}" aria-label="${label} details">${person}</button></td>
+      <td>${escapeHtml(item.role)}</td>
+      <td>${escapeHtml(item.team ?? "—")}</td>
+      <td><div class="entitlement">${permission}</div>${item.privileged ? '<span class="privileged">Privileged</span>' : tour ? "" : `<div class="subline">Permission · v${item.snapshot_version}</div>`}</td>
+      <td>${item.employment_status ? pill(item.employment_status === "Active" ? "retain" : "revoke", item.employment_status) : "—"}</td>
+      <td class="insight-cell">${insights} <span>${escapeHtml(item.original_recommendation.basis)}</span></td>
+      <td>${suggestion(original)}</td>
       <td><div class="row-actions">${actions}<button type="button" class="action note" data-item="${id}"
-        aria-label="View evidence and audit note for ${person}" title="Evidence and audit note">▤</button></div>${changed}</td>
+        aria-label="View evidence and audit note for ${label}" title="Evidence and audit note">▤</button></div>${changed}</td>
     </tr>`;
-  }).join("") || '<tr><td class="empty" colspan="6">No permissions match this view.</td></tr>';
+  }).join("") || '<tr><td class="empty" colspan="9">No permissions match this view.</td></tr>';
+  byId("permission-count").textContent = `${items.length} ${items.length === 1 ? "Entitlement" : "Entitlements"}`;
   renderSelection();
 }
 
 function visibleItems() {
   const query = byId("search").value.trim().toLowerCase();
+  const outcome = byId("suggestion-filter").value;
   return report.items.filter((item) =>
     (view === "all" || item.status === view) && (!attentionOnly || needsAttention(item)) &&
+    (!outcome || item.original_recommendation.outcome === outcome) &&
     [item.person, item.entitlement, item.id, item.original_recommendation.outcome, ...item.insight_categories]
       .some((value) => value.toLowerCase().includes(query)));
 }
@@ -126,7 +137,7 @@ function renderEvents() {
     const receipt = recorded ? ` · Receipt ${event.receipt_id.slice(0, 8)}` : "";
     return `<li><span aria-hidden="true" class="event-icon ${recorded ? "retain" : "warning"}">${recorded ? "✓" : "!"}</span>
       <div><div class="event-title">${escapeHtml(message)}</div>
-      <button type="button" class="item-button" data-item="${escapeHtml(item.id)}">${escapeHtml(item.person)}</button>
+      <button type="button" class="item-button" data-item="${escapeHtml(item.id)}">${escapeHtml(item.person + " · " + item.entitlement)}</button>
       <div class="event-meta">${escapeHtml(item.id + receipt)} · ${escapeHtml(formatTime(event.attempted_at))}
       · ${channel(event.client)}</div></div></li>`;
   }).join("") || '<li class="empty">No submission attempts yet. Decisions from either surface will appear here.</li>';
@@ -139,7 +150,8 @@ function renderDetail() {
   const receipt = item.receipt;
   const attempt = item.latest_attempt;
   const section = (title, body) => `<section class="detail-section"><h3>${title}</h3>${body}</section>`;
-  byId("detail-id").textContent = `${item.id} · SNAPSHOT V${item.snapshot_version}`;
+  byId("detail-id").textContent = report.campaign.id === "AD-REVIEW"
+    ? "Permission details" : `${item.id} · SNAPSHOT V${item.snapshot_version}`;
   byId("detail-title").textContent = item.person;
   const original = section("Albus suggestion",
     `${suggestion(recommendation.outcome)} <span class="muted">Snapshot v${recommendation.snapshot_version}</span>
@@ -175,6 +187,10 @@ function render() {
   const recorded = items.filter((item) => item.receipt).length;
   const failures = items.filter(needsAttention).length;
   byId("campaign-title").textContent = campaign.title;
+  const app = campaign.id === "AD-REVIEW" ? `${campaign.app} (Demo)` : campaign.app;
+  byId("app-title").textContent = app;
+  byId("breadcrumb-app").textContent = app;
+  byId("review-status").textContent = recorded === items.length ? "· Complete" : "· In Review";
   byId("progress-count").textContent = `${recorded} of ${items.length} recorded`;
   byId("total").textContent = items.length;
   byId("recorded").textContent = recorded;
@@ -186,7 +202,7 @@ function render() {
     byId("attention").setAttribute("aria-pressed", "false");
   }
   for (const item of items) if (item.receipt) selected.delete(item.id);
-  byId("campaign-meta").textContent = `${campaign.id} · Reviewer ${reviewer.name} · As of ${campaign.as_of}`;
+  byId("campaign-meta").textContent = `Reviewer: ${reviewer.name} · As of ${campaign.as_of}`;
   byId("run").textContent = `Demo run ${report.run_id.slice(0, 8)} · No live remediation`;
   renderRows();
   renderEvents();
@@ -211,7 +227,8 @@ async function refresh() {
         byId("notice").hidden = true;
         byId("detail").close();
         byId("confirm").close();
-        setView("all");
+        byId("suggestion-filter").value = "";
+        setView("pending");
       }
       report = next;
       render();
@@ -296,6 +313,13 @@ document.querySelector(".tabs").addEventListener("click", (event) => {
   if (tab) setView(tab.dataset.view);
 });
 byId("search").addEventListener("input", () => { selected.clear(); renderRows(); });
+byId("toggle-filters").addEventListener("click", () => {
+  const filters = byId("filters");
+  filters.hidden = !filters.hidden;
+  byId("toggle-filters").setAttribute("aria-expanded", String(!filters.hidden));
+  byId("toggle-filters").textContent = filters.hidden ? "Show Filters" : "Hide Filters";
+});
+byId("suggestion-filter").addEventListener("change", () => { selected.clear(); renderRows(); });
 byId("attention").addEventListener("click", () => {
   attentionOnly = !attentionOnly;
   selected.clear();

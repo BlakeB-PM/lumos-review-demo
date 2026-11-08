@@ -1,5 +1,34 @@
 [
   {
+    "id": "AD-FINANCE-ADMIN",
+    "person": "Alex Rivera",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Finance Admin",
+    "privileged": true,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": ["Overprivileged"],
+    "key_facts": ["Alex works in Sales. Finance Admin lets someone manage finance settings and is reserved for Finance administrators."],
+    "evidence_refs": ["AD-ADMIN-RECORD"],
+    "allowed_actions": ["retain", "revoke"]
+  },
+  {
+    "id": "AD-ACCOUNTS-RECEIVABLE",
+    "person": "Alex Rivera",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Accounts Receivable",
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": ["Role Aligned"],
+    "key_facts": ["The directory lists Alex in Sales, and the activity log shows a recent invoice lookup."],
+    "evidence_refs": ["AD-INVOICE-RECORD"],
+    "allowed_actions": ["retain", "revoke"]
+  },
+  {
     "id": "AR-101",
     "person": "Priya Shah",
     "role": "analyst",

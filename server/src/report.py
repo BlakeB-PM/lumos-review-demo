@@ -25,7 +25,7 @@ def serve_report(reviews, port, open_browser, decision_schema, validate):
                 return
             path = urlsplit(self.path).path
             if path == "/api/report":
-                body = json.dumps(reviews.audit_report("Q4-DATA")).encode("utf-8")
+                body = json.dumps(reviews.audit_report(reviews.campaign_id)).encode("utf-8")
                 content_type = "application/json; charset=utf-8"
             elif path in ASSETS:
                 name, content_type = ASSETS[path]

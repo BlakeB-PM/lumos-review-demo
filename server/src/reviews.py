@@ -11,6 +11,7 @@ from uuid import uuid4
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 REVIEWER = "reviewer-dana"
+SCENARIOS = {"tour": "AD-REVIEW", "warehouse": "Q4-DATA"}
 REMEDIATION = "not_performed_in_simulation"
 SEARCH_TOKEN = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 
@@ -29,11 +30,12 @@ def page(records, cursor=0, limit=10):
 
 
 class Reviews:
-    def __init__(self, state_path, simulated_albus=False):
+    def __init__(self, state_path, simulated_albus=False, scenario="tour"):
         self.state_path = state_path
+        self.campaign_id = SCENARIOS[scenario]
         self.campaigns = {
             c["id"]: c for c in read_json(DATA / "campaigns.json")
-            if c["reviewer_id"] == REVIEWER
+            if c["reviewer_id"] == REVIEWER and c["id"] == self.campaign_id
         }
         self.reviewer = next(r for r in read_json(DATA / "reviewers.json") if r["id"] == REVIEWER)
         self.items = {
@@ -105,7 +107,7 @@ class Reviews:
 
     def start_demo(self, trigger_phrase):
         run_id = self.reset()
-        campaign = self.campaign("Q4-DATA")
+        campaign = self.campaign(self.campaign_id)
         items = [item for item in self.items.values() if item["review_id"] == campaign["id"]]
         return {
             "status": "demo_restarted",
@@ -127,6 +129,8 @@ class Reviews:
             raise ValueError("The demo restarted. Prepare and confirm a new batch for the current run.")
 
     def advance_sandbox_snapshot(self):
+        if "AR-107" not in self.items:
+            raise ValueError("This control is available in the warehouse scenario only.")
         with self.db(write=True) as db:
             db.execute("INSERT OR IGNORE INTO snapshots VALUES ('AR-107', 2)")
         return {"item_id": "AR-107", "snapshot_version": 2}

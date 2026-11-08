@@ -13,9 +13,10 @@ SERVER = Path(__file__).resolve().parents[1] / "server/src/main.py"
 
 
 @contextmanager
-def client(state, *options):
+def client(state, *options, scenario="warehouse"):
     with subprocess.Popen(
-        [sys.executable, str(SERVER), "--state", str(state), *options],
+        [sys.executable, str(SERVER), "--state", str(state), *options,
+         *(["--scenario", scenario] if scenario else [])],
         stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, encoding="utf-8",
     ) as process:
         request_id = 0
@@ -50,13 +51,15 @@ def client(state, *options):
 
 
 def operator(state, command):
-    subprocess.run([sys.executable, str(SERVER), command, "--state", str(state)], check=True)
+    subprocess.run([sys.executable, str(SERVER), command, "--state", str(state),
+                    "--scenario", "warehouse"], check=True)
 
 
 @contextmanager
-def browser_report(state):
+def browser_report(state, scenario="warehouse"):
     with subprocess.Popen(
-        [sys.executable, str(SERVER), "report", "--port", "0", "--state", str(state)],
+        [sys.executable, str(SERVER), "report", "--port", "0", "--state", str(state),
+         *(["--scenario", scenario] if scenario else [])],
         stdout=subprocess.PIPE, text=True, encoding="utf-8",
     ) as process:
         try:
@@ -267,6 +270,45 @@ def verify_assistant(state, report, record):
         assert written["results"][0]["client"] == "claude_cowork"
 
 
+def verify_default(state, report):
+    with client(state, scenario=None) as (_, codex):
+        started = codex("start_demo", trigger_phrase="Help me complete my access review")
+        review = {"review_id": started["campaign"]["id"]}
+        run_id = started["run_id"]
+        assert started["campaign"]["app"] == "Active Directory"
+        assert [(row["entitlement"], row["original_recommendation"]["outcome"])
+                for row in started["items"]] == [("Finance Admin", "reject"), ("Accounts Receivable", "accept")]
+        assert report()["run_id"] == run_id and all(row["receipt"] is None for row in report()["items"])
+        decisions = [
+            {"item_id": row["id"], "snapshot_version": row["snapshot_version"],
+             "outcome": "revoke", "evidence_refs": row["evidence_refs"],
+             "reason": ("No current business need under the invoice follow-up policy."
+                        if row["entitlement"] == "Accounts Receivable" else row["original_recommendation"]["basis"])}
+            for row in started["items"]
+        ]
+        for row in decisions:
+            evidence = codex("get_evidence", evidence_ids=row["evidence_refs"])
+            assert row["item_id"] in evidence["records"][0]["item_ids"]
+        invoice_policy = codex("get_evidence", evidence_ids=["AD-INVOICE-RECORD"])["records"][0]
+        assert "currently handle" in invoice_policy["excerpt"]
+        assert not codex("search_review_evidence", **review, query="Casey Brooks")["records"]
+
+        with client(state, "--assistant-host", "chatgpt_work", scenario=None) as (_, work):
+            assert work("list_my_reviews")["records"][0]["counts"]["pending"] == 2
+            proposal = work("prepare_review_batch", **review, run_id=run_id, decisions=decisions)
+            assert proposal["decisions"][1]["original_recommendation"] == "accept"
+            assert proposal["decisions"][1]["outcome"] == "revoke"
+            assert report()["events"] == []
+            work("record_review_batch", proposal_id=proposal["proposal_id"])
+
+        rows = report()["items"]
+        assert [(row["receipt"]["outcome"], row["receipt"]["reason"]) for row in rows] == [
+            (entry["outcome"], entry["reason"]) for entry in decisions]
+        assert rows[1]["original_recommendation"]["outcome"] == "accept"
+        assert "Casey Brooks" not in json.dumps(report())
+        assert codex("get_review_status", **review)["counts"]["pending"] == 0
+
+
 if __name__ == "__main__":
     scratch = SERVER.parents[1] / 'state'
     scratch.mkdir(parents=True, exist_ok=True)
@@ -275,5 +317,8 @@ if __name__ == "__main__":
         with browser_report(state) as (report, record):
             run(state, report, record)
             verify_assistant(state, report, record)
-    print("PASS: stdio discovery, reviewer scope, evidence, confirmation, partial/stale writes, "
+        state = Path(temp) / "tour.sqlite3"
+        with browser_report(state, scenario=None) as (report, _):
+            verify_default(state, report)
+    print("PASS: two-permission tour, stdio discovery, reviewer scope, evidence, confirmation, partial/stale writes, "
           "idempotency, clean runs, simulation, browser round trip, and Work/Cowork MCP proposals.")

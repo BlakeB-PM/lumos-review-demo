@@ -1,23 +1,17 @@
-# Reviewer walkthrough · ChatGPT Work
+# The one-minute access review demo
 
-## Before the audience joins
+Open the review workspace beside your assistant. It should show two permissions for Alex Rivera under **Needs Review**. In Work or Cowork, attach [Dana’s synthetic sales handoff](../personal-workspace/context/sales-handoff.md) to the chat. In the local Codex project, the assistant reads the note from its own workspace. The Lumos connector sees the permission records, policy, and usage.
 
-Connect and smoke-test the [Work plugin](connect-reviewer.md). Open the product workspace beside Work with `python server/src/main.py report --open`. Reset the synthetic campaign from the terminal before rehearsal. Attach [Dana's synthetic reviewer inbox](../personal-workspace/context/reviewer-inbox.md) to Work. It represents private agent context and is deliberately absent from the Access Reviews connector.
+| Say or do | What this shows |
+| --- | --- |
+| Point to **Accept** on Accounts Receivable. **“Lumos sees that Alex is in Sales and looked up an invoice recently. Based on that, keeping access makes sense.”** | Accounts Receivable lets Alex see whether customers have paid. The review table shows why Lumos suggested keeping it. |
+| Say **“Help me complete my access review.”** | The assistant finds Dana’s handoff: Sales Ops took over invoice follow-up. It checks the policy, which limits access to people who still do that work. It proposes **Reject Accounts Receivable**, reversing Lumos. It agrees with Lumos on **Reject Finance Admin**. |
+| Read the proposed actions and say **“Confirm those two decisions.”** | The reviewer makes the call. The assistant records the decisions and the audit notes. Dana’s message stays in the personal workspace. |
+| Switch to **Reviewed** and open the Accounts Receivable audit note. **“Same employee, same title. The assistant knew the work had changed. I could see why, make the call, and leave a record.”** | Show **Accept** in Suggestion and **Reject** in Review Action, with the audit note and cited policy. |
+| Close with **“The assistant also suggests asking IT to update the Knowledge Hub, so the next review starts with the right context.”** | Show the draft below in chat. The reviewer can decide whether to submit it separately. |
 
-| Beat | What the reviewer does | What the audience sees |
-| --- | --- | --- |
-| Find my work | In Work, select **Lumos Access Reviews** and say, “Help me complete my access review.” | The model finds Dana's assigned campaign through MCP. It groups the four routine reader permissions, and separates the elevated and unclear grants. |
-| Investigate | “Use my inbox to investigate the migration and export grants. What does it change?” | Albus originally suggested Reject for Nora. The private message says Nora took over as primary operator and points straight to SEC-217. The model searches that ID through MCP, checks its scope, dates, and operator condition, and distinguishes it from the sandbox-only SEC-214. It proposes Approve because the latest assignment satisfies the verified approval. |
-| Answer as the reviewer | “No current renewal for Eli. Leave him and Leah pending. I'll handle Mateo in the product. You may include ‘Reviewer confirmed Nora is the primary operator for the November 12 cutover’ in the audit note. Show me the proposed batch.” | The model should ask about Eli's renewal after finding the expired exception. His private message offers a possibility and leaves him pending. Work stages four routine approvals and Nora's override. The preview contains the specific summary you authorized and product evidence IDs. The raw inbox stays in Work. |
-| Confirm and inspect | Review the proposed batch and say, “Confirm that batch.” Then switch to **Reviewed** in the product. | Five permissions now have receipts marked **ChatGPT Work**. Open Nora's row and expand SEC-217. Show **Reject → Approve**, the verified product evidence and the separately labeled reviewer-approved context. |
-| Finish in the product | In **Unreviewed**, approve Mateo's sandbox permission after checking the active assignment evidence. Enter a note and confirm. Back in Work, ask, “What's still unreviewed?” | Work reads six recorded permissions and two pending. Audit Activity shows five receipts from **ChatGPT Work** and one from **Review workspace**. |
+**Draft IT request — Update Active Directory review context in the Lumos Knowledge Hub**
 
-Ask the model to show citations or the source excerpt if it summarizes an exception without evidence. If it tries to submit before showing the exact proposal, stop the run and treat that as a failed rehearsal.
+Please confirm with Sales Ops that it now owns customer invoice follow-up. Then update the Active Directory review context so the Accounts Receivable suggestion reflects who currently handles invoice follow-up; a Sales title or prior invoice lookup alone is not enough. Re-sync the review and check the suggestions. [Lumos Knowledge Hub guidance](https://support.lumos.com/articles/6323349102-knowledge-hub-access-reviews)
 
-## Optional stale-write branch
-
-Before confirming a batch that includes Mateo's sandbox permission, run `python server/src/main.py advance-snapshot`. Confirm the prepared batch. Mateo's row is blocked while valid rows record. Ask Work to refresh the item, show the owner closure, and prepare a new proposal. Confirm that proposal separately or resolve the item in the product. This branch shows write safety without interrupting the main reviewer walkthrough.
-
-## Alternate clients
-
-In Claude Cowork, use the same walkthrough with the [local connector](connect-reviewer.md). Receipts are marked **Claude Cowork**. The older Codex demo can still run locally with its original registration. Its starter phrase resets the demo and receipts are marked **Codex MCP**.
+The permission examples come from the [Lumos product tour](https://www.lumos.com/product-tours/user-access-reviews). Alex and the handoff are fictional. The demo records decisions without changing real access.

@@ -1,16 +1,21 @@
 # Lumos access review demo
 
-A synthetic Q4 warehouse access review for Codex desktop. Codex uses a local MCP server for assigned items, evidence and decisions. An interactive browser workspace reads and writes the same SQLite review state. The demo needs Python 3.10+ and uses the standard library.
+A synthetic Active Directory review inspired by the [Lumos product tour](https://www.lumos.com/product-tours/user-access-reviews). Lumos suggests keeping a Sales Account Executive’s invoice access based on role and recent usage. The personal assistant finds a handoff Lumos did not see, checks the policy, and proposes reversing that suggestion. The reviewer confirms and inspects the recorded decision and evidence in the browser. The demo needs Python 3.10+ and uses the standard library.
 
-## Try it
+## Run the demo locally
 
-**Reviewer demo in ChatGPT Work:** Follow [Connect an assistant to Access Reviews](docs/connect-reviewer.md) to install the private MCP plugin. The [reviewer walkthrough](docs/demo-script.md) shows how a private staffing handoff changes one recommendation when paired with verified product evidence. The same connector workflow can run in Claude Cowork.
+For the full assistant walkthrough, install Python 3.10 or newer and the Codex CLI, and sign in to Codex desktop. The local demo server uses synthetic fixtures and needs no API key or Lumos account.
 
-### Local Codex fallback
+```sh
+git clone https://github.com/BlakeB-PM/lumos-review-demo.git
+cd lumos-review-demo
+```
 
-1. Clone or download this repository. With Codex and Python installed, register the connector from the repository root using the command below.
-2. Start the local audit report and leave its browser tab open.
-3. Open **personal-workspace** as a local project in Codex desktop and say **Help me complete my access review.**
+1. Register the local connector using the command below.
+2. Start the browser workspace and leave it open beside Codex.
+3. Open this clone’s **personal-workspace** folder as a local project in Codex desktop and say **Help me complete my access review.** Follow the [one-minute walkthrough](docs/demo-script.md).
+
+To explore just the review table and record synthetic decisions from the browser, skip connector setup and run the browser command below. For the full assistant walkthrough in ChatGPT Work or Claude Cowork, follow [Connect an assistant to Access Reviews](docs/connect-reviewer.md).
 
 ### Register the connector once
 
@@ -38,13 +43,9 @@ python server/src/main.py report --open
 
 Use `python3` on systems where that is the Python command. The report runs at [127.0.0.1:8765](http://127.0.0.1:8765/) and refreshes about once a second. Keep the process running during the demo. Use `--port` if 8765 is occupied. If you pass `--state` to the MCP server, point the report at the same file.
 
-The workspace follows Lumos's published permissions review layout. Use **Unreviewed**, **Reviewed**, or **All Permissions**, search the table, and approve or reject a permission with the row controls. Select multiple rows for a bulk decision. Each write requires an audit note and an explicit confirmation. **Audit Activity** shows receipts and blocked attempts from both **Codex MCP** and **Review workspace**. Click a person or the evidence icon to see the suggestion, evidence, and receipt.
+The workspace follows the product tour’s permissions table. Use **Needs Review**, **Reviewed**, or **All**, and use **Show Filters** to narrow by suggestion. Each write requires an audit note and explicit confirmation. **Audit Activity** shows receipts and blocked attempts. Click a row’s note icon to see its evidence and decision.
 
-To demo the round trip, submit the first batch in Codex, then view Nora's receipt in **Reviewed**. Resolve Mateo's refreshed sandbox item in the browser and ask Codex for the latest status. Both surfaces show the same receipt. The workspace uses synthetic data and does not perform access remediation. [Lumos reviewer workflow](https://support.lumos.com/articles/8143225870-reviewing-user-access-in-lumos)
-
-The synthetic campaign starts with five **Accept**, one **Reject**, and two **Review** suggestions. The report shows Albus insight categories such as **Role Aligned**, **Inactive**, and **Unusual Access** separately from the suggestion and the reviewer's recorded decision. [Lumos Agentic Access Reviews documentation](https://support.lumos.com/articles/9591496417-agentic-access-reviews-with-ai-driven-decisions)
-
-![Audit report after five decisions and one stale write](docs/audit-report.png)
+After confirming both decisions in the assistant, switch to **Reviewed**. Open the audit note on either row to show the saved action, rationale, and evidence. The workspace records synthetic decisions without changing anyone's actual access.
 
 ## Start in one message
 
@@ -56,21 +57,18 @@ In the local Codex mode, the phrase calls `start_demo` and resets the campaign. 
 
 If the tools are missing in an existing chat after registration, start a new chat in the project or restart Codex desktop. For a read-only connection check, ask Codex to call `list_my_reviews` directly.
 
+If an existing session still shows the Q4 warehouse review, restart the local report and the connector host (Codex desktop or the Work tunnel), then open a fresh chat. Existing registrations use the new default when they relaunch the server.
+
 ## Operator controls
 
 Run these from this folder in PowerShell.
 
 ~~~powershell
 python .\server\src\main.py reset
-python .\server\src\main.py advance-snapshot
 python .\evaluation\verify.py
 ~~~
 
-The command-line reset is an operator fallback and clears the same synthetic records as the trigger. Advance-snapshot changes only AR-107 and introduces an owner closure record, so an existing version 1 proposal becomes stale. The verifier uses temporary state and leaves presentation data alone.
-
-## Optional Ask Albus
-
-Register a separate **lumos_review_sim** server with the same launcher and append **--simulated-albus**. Use only one server per rehearsal and specify its name in the chat. Both modes use the same data and state by default. The optional mode returns canned, explicitly labeled investigations and uses zero model calls. Its evidence is also available through baseline search. It stores the scoped result without the shared personal excerpt. Use **--state path** for independent rehearsal state.
+The command-line reset clears the demo decisions for a fresh run. The verifier uses temporary state and leaves presentation data alone.
 
 ## Boundaries
 

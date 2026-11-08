@@ -3,7 +3,7 @@ import json
 import sys
 from pathlib import Path
 
-from reviews import ROOT, Reviews
+from reviews import ROOT, SCENARIOS, Reviews
 
 
 def string(max_length=200):
@@ -108,7 +108,14 @@ def serve(reviews, assistant_host=None):
     instructions = (
         "Synthetic access reviews. When the user asks to start by saying "
         "'Help me complete my access review', call start_demo before any review reads. "
-        "Obtain explicit human confirmation before submitting any decision."
+        "For the Active Directory review, explain that the reviewer is deciding which permissions a "
+        "Sales Account Executive should keep. Compare the original suggestion with the current "
+        "permission policy and any authorized personal handoff context. If the handoff is missing, "
+        "ask for it instead of assuming duties changed. Explain any reversal in plain English, "
+        "keep raw personal context in the host, and obtain explicit confirmation before writing. "
+        "After recording a confirmed Accounts Receivable reversal, suggest a separate IT request to "
+        "verify the handoff and update the Active Directory review context in the Lumos Knowledge Hub. "
+        "Show an unsent draft without personal details."
     )
     if assistant_host:
         for name in ("start_demo", "submit_decisions"):
@@ -178,14 +185,18 @@ def serve(reviews, assistant_host=None):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Local Lumos review simulator")
     parser.add_argument("action", choices=["serve", "reset", "advance-snapshot", "report"], nargs="?", default="serve")
-    parser.add_argument("--state", type=Path, default=ROOT / "state/demo.sqlite3")
+    parser.add_argument("--state", type=Path)
+    parser.add_argument("--scenario", choices=SCENARIOS, default="tour")
     parser.add_argument("--simulated-albus", action="store_true")
     parser.add_argument("--assistant-host", choices=["chatgpt_work", "claude_cowork"],
                         help="Expose the reviewer workflow without demo reset or direct submission")
     parser.add_argument("--port", type=int, default=8765, help="Local audit report port")
     parser.add_argument("--open", action="store_true", help="Open the audit report in your browser")
     args = parser.parse_args()
-    reviews = Reviews(args.state, args.simulated_albus)
+    if args.simulated_albus or args.action == "advance-snapshot":
+        args.scenario = "warehouse"
+    state_name = "tour.sqlite3" if args.scenario == "tour" else "demo.sqlite3"
+    reviews = Reviews(args.state or ROOT / "state" / state_name, args.simulated_albus, args.scenario)
     if args.action == "reset":
         reviews.reset()
         print("Demo decisions, investigations, attempts and snapshot changes cleared.")

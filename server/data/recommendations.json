@@ -1,5 +1,19 @@
 [
   {
+    "item_id": "AD-FINANCE-ADMIN",
+    "outcome": "reject",
+    "basis": "Sales does not need to manage finance settings. That permission is reserved for Finance administrators.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-ACCOUNTS-RECEIVABLE",
+    "outcome": "accept",
+    "basis": "Customer invoice lookup is consistent with a Sales role. Alex looked up an invoice recently.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-06T12:00:00Z"
+  },
+  {
     "item_id": "AR-101",
     "outcome": "accept",
     "basis": "Assigned analytics role and recent query activity.",
