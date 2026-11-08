@@ -4,6 +4,10 @@ A synthetic Q4 warehouse access review for Codex desktop. Codex uses a local MCP
 
 ## Try it
 
+**Reviewer demo in ChatGPT Work:** Follow [Connect an assistant to Access Reviews](docs/connect-reviewer.md) to install the private MCP plugin. The [reviewer walkthrough](docs/demo-script.md) shows how a private staffing handoff changes one recommendation when paired with verified product evidence. The same connector workflow can run in Claude Cowork.
+
+### Local Codex fallback
+
 1. Clone or download this repository. With Codex and Python installed, register the connector from the repository root using the command below.
 2. Start the local audit report and leave its browser tab open.
 3. Open **personal-workspace** as a local project in Codex desktop and say **Help me complete my access review.**
@@ -48,7 +52,7 @@ Open **personal-workspace** as a local project in Codex desktop. In a chat in th
 
 > Help me complete my access review.
 
-Codex calls `start_demo`, which clears the previous synthetic run and returns Dana Morgan's Q4-DATA campaign with eight pending items. Say the phrase again in the same chat to restart the review. Open a fresh chat if you also want a blank transcript. Then follow the [five-minute script](docs/demo-script.md).
+In the local Codex mode, the phrase calls `start_demo` and resets the campaign. In Work and Cowork, it resumes the existing review. Reset a rehearsal separately with the operator command below.
 
 If the tools are missing in an existing chat after registration, start a new chat in the project or restart Codex desktop. For a read-only connection check, ask Codex to call `list_my_reviews` directly.
 

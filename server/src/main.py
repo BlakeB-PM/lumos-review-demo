@@ -29,7 +29,7 @@ PAGING = {"cursor": integer(), "limit": integer(1, 20)}
 DECISION = obj(
     ("item_id", "snapshot_version", "outcome", "reason", "evidence_refs"),
     item_id=ID, snapshot_version=VERSION, outcome=string(), reason=string(800),
-    evidence_refs=array(ID), investigation_id=ID,
+    evidence_refs=array(ID), investigation_id=ID, context_summary=string(400),
 )
 TOOLS = {
     "start_demo": ("Reset this local synthetic review and open its clean campaign. Call only when the "
@@ -60,6 +60,17 @@ ALBUS = ("Run a clearly labeled scripted investigation for a specific unresolved
                  ("claim", "source", "date", "sharing_intent"), claim=string(500),
                  source=string(), date=string(40), sharing_intent={"enum": ["share_for_this_investigation"]},
              )))
+ASSISTANT_TOOLS = {
+    "prepare_review_batch": (
+        "Stage and validate an exact decision proposal for human review. Does not record any decision.",
+        obj(("review_id", "run_id", "decisions"), review_id=ID, run_id=ID, decisions=array(DECISION)),
+    ),
+    "record_review_batch": (
+        "Record exactly the previously staged proposal. Call only after the human sees its items, outcomes "
+        "and evidence and explicitly confirms that exact proposal. A retry returns the same receipts.",
+        obj(("proposal_id",), proposal_id=ID),
+    ),
+}
 
 
 def validate(value, schema, path="arguments"):
@@ -92,9 +103,19 @@ def send(response):
     print(json.dumps({"jsonrpc": "2.0", **response}, ensure_ascii=True), flush=True)
 
 
-def serve(reviews):
+def serve(reviews, assistant_host=None):
     tools = dict(TOOLS)
-    if reviews.albus is not None:
+    instructions = (
+        "Synthetic access reviews. When the user asks to start by saying "
+        "'Help me complete my access review', call start_demo before any review reads. "
+        "Obtain explicit human confirmation before submitting any decision."
+    )
+    if assistant_host:
+        for name in ("start_demo", "submit_decisions"):
+            del tools[name]
+        tools.update(ASSISTANT_TOOLS)
+        instructions = (ROOT.parent / "reviewer-skill/SKILL.md").read_text(encoding="utf-8").split("---", 2)[2].strip()
+    elif reviews.albus is not None:
         tools["ask_albus"] = ALBUS
     for line in sys.stdin.buffer:
         try:
@@ -119,17 +140,16 @@ def serve(reviews):
             result = {"protocolVersion": requested if requested in supported else supported[0],
                       "capabilities": {"tools": {}},
                       "serverInfo": {"name": "lumos-review-demo", "version": "1.0.0"},
-                      "instructions": "Synthetic access reviews. When the user asks to start by saying "
-                      "'Help me complete my access review', call start_demo before any review reads. "
-                      "Obtain explicit human confirmation before submitting any decision."}
+                      "instructions": instructions}
         elif method == "ping":
             result = {}
         elif method == "tools/list":
             result = {"tools": [
                 {"name": name, "description": description, "inputSchema": schema,
-                 "annotations": {"readOnlyHint": name not in ("submit_decisions", "start_demo"),
-                                 "destructiveHint": name == "start_demo",
-                                 "idempotentHint": name not in ("ask_albus", "start_demo"), "openWorldHint": False}}
+                 "annotations": {"readOnlyHint": name not in ("submit_decisions", "start_demo", *ASSISTANT_TOOLS),
+                                 "destructiveHint": name in ("start_demo", "record_review_batch"),
+                                 "idempotentHint": name not in ("ask_albus", "start_demo", "prepare_review_batch"),
+                                 "openWorldHint": False}}
                 for name, (description, schema) in tools.items()
             ]}
         elif method == "tools/call":
@@ -139,6 +159,8 @@ def serve(reviews):
                     raise ValueError("Tool unavailable in this mode.")
                 arguments = params.get("arguments", {})
                 validate(arguments, tools[name][1])
+                if name in ASSISTANT_TOOLS:
+                    arguments = {**arguments, "client": assistant_host}
                 data = getattr(reviews, name)(**arguments)
                 result = {"content": [{"type": "text", "text": json.dumps(data)}]}
             except ValueError as error:
@@ -158,6 +180,8 @@ if __name__ == "__main__":
     parser.add_argument("action", choices=["serve", "reset", "advance-snapshot", "report"], nargs="?", default="serve")
     parser.add_argument("--state", type=Path, default=ROOT / "state/demo.sqlite3")
     parser.add_argument("--simulated-albus", action="store_true")
+    parser.add_argument("--assistant-host", choices=["chatgpt_work", "claude_cowork"],
+                        help="Expose the reviewer workflow without demo reset or direct submission")
     parser.add_argument("--port", type=int, default=8765, help="Local audit report port")
     parser.add_argument("--open", action="store_true", help="Open the audit report in your browser")
     args = parser.parse_args()
@@ -172,4 +196,4 @@ if __name__ == "__main__":
 
         serve_report(reviews, args.port, args.open, TOOLS["submit_decisions"][1], validate)
     else:
-        serve(reviews)
+        serve(reviews, args.assistant_host)

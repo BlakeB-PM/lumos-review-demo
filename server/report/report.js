@@ -93,7 +93,11 @@ function renderSelection() {
 }
 
 function channel(client) {
-  return client === "local_review_ui" ? "Review workspace" : "Codex MCP";
+  return {
+    local_review_ui: "Review workspace",
+    chatgpt_work: "ChatGPT Work",
+    claude_cowork: "Claude Cowork",
+  }[client] || "Codex MCP";
 }
 
 function setView(next) {
@@ -141,8 +145,11 @@ function renderDetail() {
     `${suggestion(recommendation.outcome)} <span class="muted">Snapshot v${recommendation.snapshot_version}</span>
     <p class="insight">${escapeHtml(item.insight_categories.join(" · "))}</p>
     <p>${escapeHtml(recommendation.basis)}</p>`);
+  const personalContext = receipt?.context_summary
+    ? `<p class="muted">Reviewer-approved context</p><p>${escapeHtml(receipt.context_summary)}</p>` : "";
   const result = receipt ? section("Recorded decision",
     `${decision(receipt.outcome)}<p>${escapeHtml(receipt.reason)}</p>
+    ${personalContext}
     <p class="muted">Reviewer ${escapeHtml(report.reviewer.name)} · ${channel(receipt.client)} · Snapshot v${receipt.snapshot_version}</p>
     <p class="muted">Receipt <code>${escapeHtml(receipt.receipt_id)}</code></p>
     <p class="muted">Remediation: no access changes in this simulation</p>`)

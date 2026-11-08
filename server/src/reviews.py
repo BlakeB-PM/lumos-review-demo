@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 REVIEWER = "reviewer-dana"
 REMEDIATION = "not_performed_in_simulation"
+SEARCH_TOKEN = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 
 
 def read_json(path):
@@ -62,6 +63,10 @@ class Reviews:
                 CREATE TABLE IF NOT EXISTS batches (
                     key TEXT PRIMARY KEY, fingerprint TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS proposals (
+                    id TEXT PRIMARY KEY, run_id TEXT NOT NULL, client TEXT NOT NULL,
+                    review_id TEXT NOT NULL, decisions TEXT NOT NULL
+                );
                 CREATE TABLE IF NOT EXISTS attempts (
                     seq INTEGER PRIMARY KEY, batch_key TEXT NOT NULL,
                     item_id TEXT NOT NULL, result TEXT NOT NULL,
@@ -92,7 +97,7 @@ class Reviews:
 
     def reset(self):
         with self.db(write=True) as db:
-            for table in ("investigations", "decisions", "attempts", "batches", "snapshots"):
+            for table in ("investigations", "decisions", "attempts", "batches", "proposals", "snapshots"):
                 db.execute(f"DELETE FROM {table}")
             run_id = str(uuid4())
             db.execute("UPDATE demo_run SET id = ? WHERE singleton = 1", (run_id,))
@@ -227,20 +232,60 @@ class Reviews:
             if item_id not in scope:
                 raise ValueError("Item is unavailable in this review.")
             scope = [item_id]
-        terms = set(re.findall(r"[a-z0-9]+", query.casefold()))
+        terms = set(SEARCH_TOKEN.findall(query.casefold()))
         matches = []
         with self.db() as db:
             db.execute("BEGIN")
             for evidence_id in self.sources:
                 source = next((record for i in scope if (record := self.source_for(db, evidence_id, i))), None)
                 if source:
-                    title_terms = set(re.findall(r"[a-z0-9]+", source["title"].casefold()))
-                    body_terms = set(re.findall(r"[a-z0-9]+", json.dumps(source).casefold()))
+                    title_terms = set(SEARCH_TOKEN.findall(source["title"].casefold()))
+                    body_terms = set(SEARCH_TOKEN.findall(json.dumps(source).casefold()))
                     score = 2 * len(terms & title_terms) + len(terms & body_terms)
                     if score:
                         matches.append((score, evidence_id, source))
         matches.sort(key=lambda entry: (-entry[0], entry[1]))
         return {"review_id": review_id, "item_id": item_id, "records": [m[2] for m in matches[:limit]]}
+
+    def prepare_review_batch(self, review_id, run_id, decisions, client):
+        self.campaign(review_id)
+        ids = [decision["item_id"] for decision in decisions]
+        if len(ids) != len(set(ids)):
+            raise ValueError("Each item must appear only once in the batch.")
+        proposal_id = str(uuid4())
+        with self.db(write=True) as db:
+            self.require_current_run(db, run_id)
+            preview = []
+            for decision in decisions:
+                item_id = decision["item_id"]
+                item = self.items.get(item_id)
+                if item is None or item["review_id"] != review_id:
+                    raise ValueError("Item is unavailable in this review.")
+                if decision["outcome"] not in item["allowed_actions"]:
+                    raise ValueError(f"Unsupported outcome for {item_id}.")
+                if decision["snapshot_version"] != self.version(db, item_id):
+                    raise ValueError(f"{item_id} changed. Refresh it before preparing the batch.")
+                if db.execute("SELECT 1 FROM decisions WHERE item_id = ?", (item_id,)).fetchone():
+                    raise ValueError(f"{item_id} has already been reviewed.")
+                if any(self.source_for(db, ref, item_id) is None for ref in decision["evidence_refs"]):
+                    raise ValueError(f"{item_id} has an unavailable evidence reference.")
+                preview.append({**decision, "person": item["person"], "entitlement": item["entitlement"],
+                                "original_recommendation": self.recommendations[item_id]["outcome"]})
+            db.execute("INSERT INTO proposals VALUES (?, ?, ?, ?, ?)",
+                       (proposal_id, run_id, client, review_id, json.dumps(decisions)))
+        return {"proposal_id": proposal_id, "review_id": review_id, "status": "awaiting_confirmation",
+                "decisions": preview}
+
+    def record_review_batch(self, proposal_id, client):
+        with self.db() as db:
+            row = db.execute(
+                "SELECT run_id, review_id, decisions FROM proposals WHERE id = ? AND client = ?",
+                (proposal_id, client),
+            ).fetchone()
+        if row is None:
+            raise ValueError("That proposal is unavailable. Prepare a new batch.")
+        run_id, review_id, decisions = row
+        return self.submit_decisions(review_id, json.loads(decisions), proposal_id, True, run_id, client)
 
     def submit_decisions(self, review_id, decisions, idempotency_key, reviewer_confirmed, run_id,
                          client="local_mcp_demo"):
@@ -308,6 +353,8 @@ class Reviews:
                    "original_recommendation": self.recommendations[item_id],
                    "evidence": [{"id": source["id"], "version": source["version"]} for source in sources],
                    "investigation_id": investigation_id}
+        if "context_summary" in decision:
+            receipt["context_summary"] = decision["context_summary"]
         db.execute("INSERT INTO decisions VALUES (?, ?)", (item_id, json.dumps(receipt)))
         return receipt
 

@@ -12,4 +12,4 @@
   "version": 1
 }
 ---
-Security approval SEC-217 covers Nora Patel's exact warehouse.prod.migration_admin entitlement for the Nov 12 Atlas cutover. Owner: Data Platform. A separately approved read-only sandbox grant would not cover this production entitlement.
+Security approval SEC-217 covers Nora Patel's exact warehouse.prod.migration_admin entitlement for the Nov 12 Atlas cutover, conditional on Nora serving as primary cutover operator. Owner: Data Platform. The approval records the permitted scope and dates. It does not track the latest staffing handoff.

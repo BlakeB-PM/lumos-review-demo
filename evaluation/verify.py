@@ -214,6 +214,59 @@ def run(state, report, record):
         assert tool("get_evidence", evidence_ids=["OBS-AR-107-V2"])["records"] == []
 
 
+def verify_assistant(state, report, record):
+    review = {"review_id": "Q4-DATA"}
+    with client(state, "--assistant-host", "chatgpt_work") as (rpc, tool):
+        tools = {t["name"]: t for t in rpc("tools/list")["tools"]}
+        assert "start_demo" not in tools and "submit_decisions" not in tools
+        assert not tools["record_review_batch"]["annotations"]["readOnlyHint"]
+        assert tools["record_review_batch"]["annotations"]["destructiveHint"]
+        page = tool("get_review_items", **review, status="pending")
+        run_id = page["run_id"]
+        assert tool("list_my_reviews")["records"][0]["counts"]["pending"] == 8
+        search = tool("search_review_evidence", **review, item_id="AR-105", query="SEC-217")
+        assert [source["id"] for source in search["records"]] == ["EX-MIGRATION"]
+        assert "primary cutover operator" in search["records"][0]["excerpt"]
+        nora = {"item_id": "AR-105", "snapshot_version": 1, "outcome": "retain",
+                "reason": "The Security exception covers the exact grant.",
+                "evidence_refs": ["EX-MIGRATION", "POL-ELEVATED"],
+                "context_summary": "Reviewer confirmed Nora is the primary operator for the November 12 cutover."}
+        sandbox = {"item_id": "AR-107", "snapshot_version": 1, "outcome": "retain",
+                   "reason": "Original snapshot shows an active assignment.",
+                   "evidence_refs": ["POL-SANDBOX"]}
+        prepared = tool("prepare_review_batch", **review, run_id=run_id, decisions=[nora, sandbox])
+        assert prepared["status"] == "awaiting_confirmation"
+        assert not report()["events"]
+        assert prepared["decisions"][0]["original_recommendation"] == "reject"
+        assert tool("record_review_batch", proposal_id="missing", error=True)
+        assert tool("record_review_batch", proposal_id=prepared["proposal_id"], decisions=[nora], error=True)
+        with client(state, "--assistant-host", "claude_cowork") as (_, cowork):
+            assert cowork("record_review_batch", proposal_id=prepared["proposal_id"], error=True)
+
+        operator(state, "advance-snapshot")
+        written = tool("record_review_batch", proposal_id=prepared["proposal_id"])
+        assert [r["status"] for r in written["results"]] == ["recorded", "refresh_required"]
+        assert written["results"][0]["client"] == "chatgpt_work"
+        assert written["results"][0]["context_summary"] == nora["context_summary"]
+        assert tool("record_review_batch", proposal_id=prepared["proposal_id"]) == written
+        assert len(report()["events"]) == 2
+        assert next(row for row in report()["items"] if row["id"] == "AR-105")["receipt"] == written["results"][0]
+
+        sandbox.update(snapshot_version=2, outcome="revoke", reason="The assignment is closed.",
+                       evidence_refs=["OBS-AR-107-V2"])
+        browser = record({**review, "run_id": run_id, "idempotency_key": "ui-after-work",
+                          "reviewer_confirmed": True, "decisions": [sandbox]})
+        assert browser["results"][0] in tool("get_review_status", **review)["recorded"]
+        operator(state, "reset")
+        assert tool("record_review_batch", proposal_id=prepared["proposal_id"], error=True)
+
+    with client(state, "--assistant-host", "claude_cowork") as (_, cowork):
+        run_id = cowork("get_review_items", **review)["run_id"]
+        prepared = cowork("prepare_review_batch", **review, run_id=run_id, decisions=[nora])
+        written = cowork("record_review_batch", proposal_id=prepared["proposal_id"])
+        assert written["results"][0]["client"] == "claude_cowork"
+
+
 if __name__ == "__main__":
     scratch = SERVER.parents[1] / 'state'
     scratch.mkdir(parents=True, exist_ok=True)
@@ -221,5 +274,6 @@ if __name__ == "__main__":
         state = Path(temp) / "test.sqlite3"
         with browser_report(state) as (report, record):
             run(state, report, record)
+            verify_assistant(state, report, record)
     print("PASS: stdio discovery, reviewer scope, evidence, confirmation, partial/stale writes, "
-          "idempotency across process restarts, phrase-triggered clean runs, simulation and live audit report.")
+          "idempotency, clean runs, simulation, browser round trip, and Work/Cowork MCP proposals.")

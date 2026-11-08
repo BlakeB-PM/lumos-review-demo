@@ -9,6 +9,8 @@
 | search_review_evidence | Campaign ID, query, optional item ID and limit. Returns ranked source matches in the authorized scope. |
 | submit_decisions | Campaign ID, run ID, confirmation assertion, idempotency key and explicit item decisions. Each decision includes item ID, snapshot version, outcome, reason and evidence IDs. Optional investigation ID must match item and snapshot. |
 | get_review_status | Campaign ID. Returns receipts, pending IDs, most recent failures for still-pending items, and remediation status. |
+| prepare_review_batch | Work and Cowork. Validates an explicit, evidence-backed decision draft and returns a proposal ID and reviewable rows. No decision is recorded. |
+| record_review_batch | Work and Cowork. Accepts only the proposal ID and records that exact proposal after reviewer confirmation in the host. Retries use the same ID. |
 | ask_albus | Simulation only. Item ID, snapshot version, specific question and optional bounded attributed claim with explicit sharing intent. Returns a labeled investigation with cited source versions, checks, open issues and timing. |
 
 A submission reserves its idempotency key for the exact ordered payload within a run. Each item and its audit attempt commit together in an independent SQLite transaction. Replaying the same key and payload returns the saved receipts and errors and can finish work interrupted between items. A changed payload needs a new key. An item can have only one recorded decision. A stale write returns refresh_required with the current snapshot. A reset invalidates earlier run IDs, including those of submissions interrupted between items. Keep pending items out of the decision payload.
