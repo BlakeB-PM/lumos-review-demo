@@ -1,6 +1,6 @@
 # ChatGPT access review walkthrough
 
-Reset the synthetic ChatGPT run before the audience joins. Open a fresh ChatGPT Work chat with **Lumos Access Reviews** and **Dana Personal Context** selected. Follow the [connection guide](connect-reviewer.md) to install both.
+Reset the synthetic run before the audience joins. Open **personal-workspace** as a local project in the desktop app and start a fresh local chat. Follow the [local connection guide](connect-reviewer.md) to register both MCP servers.
 
 > Help me do my access review.
 
@@ -14,5 +14,7 @@ Reset the synthetic ChatGPT run before the audience joins. Open a fresh ChatGPT 
 | Show **17 of 17 recorded**. Optionally open the audit report or select **Draft Knowledge Hub follow-up**. | The audit retains the original Albus Accept, the recorded Reject and a policy-based reason. The suggested follow-up asks IT to verify the role-level handoff and update the Active Directory Knowledge Hub. |
 
 To exercise an exception, deselect one offboarding grant before preview. Confirm that it stays in the queue and that the recorded count reflects the selection. To exercise missing context, disable Dana Personal Context and open the review in a chat without the transcript. Accounts Receivable should stay pending. Finance Admin can still be decided from Lumos evidence.
+
+If the local client presents only tool results, ask for the offboarding group, preview and confirm the exact batch in chat, then ask it to check Alex against your work context. The same tool calls update the same review.
 
 The transcript, speakers and private source ID stay out of Lumos calls and the audit. All people, evidence and decisions are synthetic. No real access changes.
