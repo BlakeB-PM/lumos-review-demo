@@ -158,10 +158,9 @@ function renderDetail() {
     <p class="insight">${escapeHtml(item.insight_categories.join(" · "))}</p>
     <p>${escapeHtml(recommendation.basis)}</p>`);
   const personalContext = receipt?.context_summary
-    ? `<p class="muted">Reviewer-approved context</p><p>${escapeHtml(receipt.context_summary)}</p>` : "";
+    ? section("Reviewer-approved work context", `<p>${escapeHtml(receipt.context_summary)}</p>`) : "";
   const result = receipt ? section("Recorded decision",
     `${decision(receipt.outcome)}<p>${escapeHtml(receipt.reason)}</p>
-    ${personalContext}
     <p class="muted">Reviewer ${escapeHtml(report.reviewer.name)} · ${channel(receipt.client)} · Snapshot v${receipt.snapshot_version}</p>
     <p class="muted">Receipt <code>${escapeHtml(receipt.receipt_id)}</code></p>
     <p class="muted">Remediation: no access changes in this simulation</p>`)
@@ -179,7 +178,7 @@ function renderDetail() {
         <p class="muted">${escapeHtml(source.source_system + window)}</p>
         <p>${escapeHtml(source.excerpt)}</p></details>`;
     }).join(""));
-  byId("detail-body").innerHTML = `<p class="entitlement">${escapeHtml(item.entitlement)}</p>${original}${result}${evidence}`;
+  byId("detail-body").innerHTML = `<p class="entitlement">${escapeHtml(item.entitlement)}</p>${original}${result}${personalContext}${evidence}`;
 }
 
 function render() {

@@ -342,6 +342,8 @@ def verify_chatgpt(state, report):
         assert resource["mimeType"] == "text/html;profile=mcp-app"
         assert "ui/initialize" in resource["text"] and "Check my work context" in resource["text"]
         assert "left to review" in resource["text"] and "Suggested review order" in resource["text"]
+        assert "Work context to save with this decision" in resource["text"]
+        assert "Knowledge Hub follow-up" not in resource["text"]
         assert tools["preview_offboarding_batch"]["annotations"]["readOnlyHint"]
         assert not tools["record_review_batch"]["annotations"]["readOnlyHint"]
         assert "start_demo" not in tools and "submit_decisions" not in tools
@@ -392,20 +394,34 @@ def verify_chatgpt(state, report):
         ids_and_codes = zip(alex["items"], ["no_current_invoice_duty", "no_finance_admin_assignment"])
         judgments = [{"item_id": item["id"], "snapshot_version": item["snapshot_version"],
                       "reason_code": code} for item, code in ids_and_codes]
+        handoff = "invoice_follow_up_transferred_to_sales_ops"
         assert "unsupported fields" in tool("preview_alex_batch", **run, error=True,
                                             judgments=[judgments[0] | {"transcript": transcript["excerpt"]}])
         assert "does not apply" in tool("preview_alex_batch", **run, error=True,
                                         judgments=[judgments[0] | {"reason_code": judgments[1]["reason_code"]}])
+        assert "does not apply" in tool("preview_alex_batch", **run, error=True,
+                                        judgments=[judgments[1] | {"work_context": handoff}])
+        assert "outside the allowed values" in tool("preview_alex_batch", **run, error=True,
+                                                   judgments=[judgments[0] | {"work_context": transcript["excerpt"]}])
+        without_context = tool("preview_alex_batch", **run, judgments=judgments)
+        assert all("context_summary" not in row for row in without_context["decisions"])
+        judgments[0]["work_context"] = handoff
         proposal = tool("preview_alex_batch", **run, judgments=judgments)
         assert [row["stance"] for row in proposal["decisions"]] == ["disagree", "agree"]
+        summary = proposal["decisions"][0]["context_summary"]
+        assert "Sales Ops took over invoice follow-up" in summary and "part of the handoff" in summary
+        assert "context_summary" not in proposal["decisions"][1]
         assert tool("open_access_review")["review"]["recorded"] == 15
         final = tool("record_review_batch", batch_token=proposal["batch_token"])
         assert final["review"]["recorded"] == 17 and final["review"]["pending"] == 0
-        assert final["review"]["reversal_recorded"]
+        assert final["results"][0]["context_summary"] == summary
         audit = report()
         assert len(audit["events"]) == 17
         ar = next(item for item in audit["items"] if item["id"] == "AD-ACCOUNTS-RECEIVABLE")
         assert ar["original_recommendation"]["outcome"] == "accept" and ar["receipt"]["outcome"] == "revoke"
+        assert ar["receipt"]["context_summary"] == summary
+        finance = next(item for item in audit["items"] if item["id"] == "AD-FINANCE-ADMIN")
+        assert "context_summary" not in finance["receipt"]
         assert all(value not in json.dumps(audit) for value in (transcript["source_id"], "Casey Brooks", "transition call"))
         subprocess.run([sys.executable, str(SERVER), "reset", "--scenario", "chatgpt", "--state", str(state)], check=True)
         assert "restarted" in tool("record_review_batch", batch_token=proposal["batch_token"], error=True)

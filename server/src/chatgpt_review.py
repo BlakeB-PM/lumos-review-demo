@@ -11,9 +11,14 @@ from mcp_stdio import array, integer, obj, serve_stdio, string
 from reviews import REMEDIATION, ROOT
 
 
-RESOURCE_URI = "ui://lumos/access-review-v2.html"
+RESOURCE_URI = "ui://lumos/access-review-v3.html"
 MIME_TYPE = "text/html;profile=mcp-app"
 CLIENT = "chatgpt_work"
+HANDOFF_FINDING = "invoice_follow_up_transferred_to_sales_ops"
+HANDOFF_SUMMARY = (
+    "A work call confirmed that Sales Ops took over invoice follow-up and that the recent invoice lookup "
+    "was part of the handoff. That activity no longer indicates an ongoing need for Accounts Receivable access."
+)
 JUDGMENTS = {
     "no_current_invoice_duty": (ACCOUNTS_RECEIVABLE, "revoke",
                                "No current invoice follow-up responsibility under the Accounts Receivable access policy."),
@@ -45,10 +50,14 @@ TOOLS = {
     "preview_alex_batch": (
         "Show ChatGPT's comparison with Albus and preview only the decisions supported by evidence. "
         "Read Lumos evidence and check the separate private work context first for Accounts Receivable. "
-        "Send only reason codes. Omit any grant awaiting evidence. This does not record decisions.",
+        "Use reason codes and include work_context only for a verified, decision-relevant finding. "
+        "Set it to invoice_follow_up_transferred_to_sales_ops only if the call confirms the handoff "
+        "and explains the lookup. The reviewer sees the resulting summary before confirmation. "
+        "Omit any grant awaiting evidence. This does not record decisions.",
         obj(("run_id", "judgments"), run_id=string(), judgments=array(
             obj(("item_id", "snapshot_version", "reason_code"), item_id=string(),
-                snapshot_version=integer(1), reason_code={"enum": list(JUDGMENTS)}), 2)),
+                snapshot_version=integer(1), reason_code={"enum": list(JUDGMENTS)},
+                work_context={"enum": [HANDOFF_FINDING]}), 2)),
     ),
     "record_review_batch": (
         "Record exactly the signed batch the reviewer saw and explicitly confirmed. Call only after confirmation. "
@@ -73,10 +82,14 @@ Accounts Receivable pending and say what evidence is needed. Do not assume there
 
 Compare each proposed judgment with Albus. Use preview_alex_batch for the supported judgments so the reviewer
 sees the exact grants, original rationale, ChatGPT's judgment, audit reason and proposed actions in the panel.
-Keep the transcript, speaker, title, excerpts and private source ID out of every Lumos call. Use only the
-allowed reason codes. Explain in one short chat sentence how any verified handoff changed the interpretation
-of the lookup. Respect exclusions and leave unresolved grants pending. After a confirmed reversal, offer an unsent, role-level Knowledge Hub
-follow-up for IT. Record only synthetic review decisions. Access removal is simulated."""
+Keep the transcript, speaker, title, excerpts and private source ID out of every Lumos call. If the work
+call confirms the Sales Ops transfer and explains the lookup, pass work_context=invoice_follow_up_transferred_to_sales_ops
+on Accounts Receivable so the reviewer can approve the summary as part of that decision. Leave work_context
+off grants it did not inform. Explain how the finding changes Albus's interpretation of the lookup.
+Respect exclusions and leave unresolved grants pending.
+
+If the investigation exposes a useful update to shared review guidance, you may suggest it in conversation
+when relevant. Record only synthetic review decisions. Access removal is simulated."""
 
 
 class ChatGPTReview:
@@ -89,9 +102,10 @@ class ChatGPTReview:
 
     def overview(self, db):
         reviews = self.reviews
-        recorded = dict(db.execute("SELECT item_id, receipt FROM decisions"))
+        recorded = {row[0] for row in db.execute("SELECT item_id FROM decisions")}
         pending = [item for item in reviews.items.values() if item["id"] not in recorded]
         bulk = sum(OFFBOARDING_EVIDENCE in item["evidence_refs"] for item in pending)
+        context_people = {item["person"] for item in pending if OFFBOARDING_EVIDENCE not in item["evidence_refs"]}
         return {
             "run_id": reviews.run_id(db),
             "review_id": reviews.campaign_id,
@@ -102,8 +116,7 @@ class ChatGPTReview:
             "pending": len(pending),
             "groups": {"offboarding": bulk, "alex": len(pending) - bulk},
             "recommended_group": "offboarding" if bulk else "alex" if pending else None,
-            "reversal_recorded": (ACCOUNTS_RECEIVABLE in recorded and
-                                  json.loads(recorded[ACCOUNTS_RECEIVABLE])["outcome"] == "revoke"),
+            "context_review_label": next(iter(context_people)) if len(context_people) == 1 else "Individual review",
         }
 
     def open_access_review(self):
@@ -155,9 +168,14 @@ class ChatGPTReview:
                 item_id, outcome, reason = JUDGMENTS[judgment["reason_code"]]
                 if item_id != judgment["item_id"]:
                     raise ValueError("That reason does not apply to this grant.")
-                decisions.append({"item_id": item_id, "snapshot_version": judgment["snapshot_version"],
-                                  "outcome": outcome, "reason": reason,
-                                  "evidence_refs": reviews.items[item_id]["evidence_refs"]})
+                decision = {"item_id": item_id, "snapshot_version": judgment["snapshot_version"],
+                            "outcome": outcome, "reason": reason,
+                            "evidence_refs": reviews.items[item_id]["evidence_refs"]}
+                if "work_context" in judgment:
+                    if judgment["reason_code"] != "no_current_invoice_duty":
+                        raise ValueError("The work-context finding does not apply to this judgment.")
+                    decision["context_summary"] = HANDOFF_SUMMARY
+                decisions.append(decision)
             return self.preview(db, run_id, decisions, "alex")
 
     def preview(self, db, run_id, decisions, group):
@@ -188,7 +206,7 @@ class ChatGPTReview:
         if overview["review"]["run_id"] != run_id:
             raise ValueError("The demo restarted. Open the current review.")
         return {**overview, "results": [
-            {key: row[key] for key in ("item_id", "status", "receipt_id") if key in row}
+            {key: row[key] for key in ("item_id", "status", "receipt_id", "outcome", "context_summary") if key in row}
             for row in result["results"]
         ], "remediation_status": REMEDIATION}
 

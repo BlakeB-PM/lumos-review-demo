@@ -227,16 +227,11 @@
   const label = value => ({ accept: "Accept", reject: "Reject", retain: "Approve", revoke: "Reject" })[value] || value;
 
   function overview() {
-    const { groups, pending: remaining, recommended_group: nextGroup, total, people } = data.review;
+    const { groups, pending: remaining, recommended_group: nextGroup, total, people,
+      context_review_label: contextLabel } = data.review;
     if (!remaining) {
       view.append(node("h2", "All decisions recorded"),
         node("p", "The synthetic review is complete. Access removal is simulated.", "muted"));
-      if (data.review.reversal_recorded) {
-        view.append(actions(button("Draft Knowledge Hub follow-up", () => askChatGPT(
-          "Draft an unsent, role-level IT request to verify the handoff and update the Active Directory Knowledge Hub. " +
-          "Keep names, private quotes and source identifiers out."
-        ))));
-      }
       return;
     }
     view.append(node("h2", `${remaining} ${remaining === 1 ? "permission" : "permissions"} left to review`),
@@ -245,7 +240,7 @@
     plan.setAttribute("aria-label", "Suggested review order");
     for (const [name, heading, detail] of [
       ["offboarding", "Ready for bulk review", "Verified HR terminations · Albus recommends Reject"],
-      ["alex", "Need a closer look", "Alex Rivera · Compare policy, Albus, and your work context"],
+      ["alex", "Need a closer look", `${contextLabel} · Compare policy, Albus, and your work context`],
     ]) {
       if (!groups[name]) continue;
       const next = name === nextGroup;
@@ -257,7 +252,7 @@
     }
     const controls = [];
     if (groups.offboarding) controls.push(button(`Review ${groups.offboarding} offboarding grants`, () => group("offboarding"), true));
-    if (groups.alex) controls.push(button("Review Alex’s permissions", () => group("alex"), !groups.offboarding));
+    if (groups.alex) controls.push(button("Review individual grants", () => group("alex"), !groups.offboarding));
     view.append(plan, actions(...controls));
   }
 
@@ -339,29 +334,29 @@
     return box;
   }
 
-  function alex() {
-    view.append(node("h2", "Alex Rivera’s permissions"));
+  function individualReview() {
+    view.append(node("h2", data.review.context_review_label));
     for (const item of data.items) {
       const detail = node("article");
       const comparison = node("div", "", "comparison");
       comparison.append(verdict("Albus", label(item.original_recommendation.outcome), item.original_recommendation.basis),
         verdict("ChatGPT", "Awaiting judgment", "Check Lumos policy and relevant work context.", true));
-      detail.append(node("h3", item.entitlement), comparison);
+      detail.append(node("h3", `${item.person} · ${item.entitlement}`), comparison);
       view.append(detail);
     }
     const controls = [];
     if (data.items.length) {
       controls.push(button("Check my work context", () => askChatGPT(
-        "Investigate the pending Alex Rivera grants in this Lumos review. Read their Lumos policy and activity. " +
-        "Use Dana Personal Context to look for Alex’s invoice follow-up call transcript if Accounts Receivable is pending. " +
-        "Compare your judgment with each Albus suggestion. Use preview_alex_batch for supported judgments only. " +
-        "Keep the transcript and private source details out of Lumos. Leave unsupported grants pending."
+        "Check the Lumos evidence and relevant work context for these pending grants: " +
+        data.items.map(item => `${item.person} · ${item.entitlement}`).join("; ") +
+        ". Follow the review connector’s guidance to preview supported decisions and any verified finding " +
+        "that affected them. Keep raw work context out of Lumos and leave unsupported grants pending."
       ), true));
       const evidence = node("div");
       controls.push(evidenceButton([...new Set(data.items.flatMap(item => item.evidence_refs))], evidence));
       view.append(actions(...controls, button("Back to overview", refresh)), evidence);
     } else {
-      view.append(node("p", "Both grants have decisions recorded.", "muted"), actions(button("Back to overview", refresh)));
+      view.append(node("p", "All grants in this group have decisions recorded.", "muted"), actions(button("Back to overview", refresh)));
     }
   }
 
@@ -377,6 +372,11 @@
         comparison.append(verdict("Albus", label(item.original_recommendation), item.albus_basis),
           verdict(`ChatGPT · ${item.stance === "agree" ? "Agree" : "Disagree"}`, label(item.outcome), item.reason, true));
         detail.append(node("h3", `${item.person} · ${item.entitlement}`), comparison);
+        if (item.context_summary) {
+          const context = node("div", "", "evidence");
+          context.append(node("h3", "Work context to save with this decision"), node("p", item.context_summary));
+          detail.append(context);
+        }
         view.append(detail);
       }
     }
@@ -393,7 +393,7 @@
     progress.max = data.review.total;
     progress.value = data.review.recorded;
     view.replaceChildren();
-    ({ overview, offboarding, alex, proposal })[data.view]?.();
+    ({ overview, offboarding, alex: individualReview, proposal })[data.view]?.();
   }
 })();
 </script>

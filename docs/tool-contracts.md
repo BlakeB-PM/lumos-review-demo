@@ -2,7 +2,7 @@
 
 ## ChatGPT plugin
 
-Run with `--scenario chatgpt --assistant-host chatgpt_work`. The scenario shares its default SQLite file and 17-grant queue with the browser report. The overview, group, preview and record tools advertise the inline `ui://lumos/access-review-v2.html` resource. The tools return structured results for both ChatGPT and the component.
+Run with `--scenario chatgpt --assistant-host chatgpt_work`. The scenario shares its default SQLite file and 17-grant queue with the browser report. The overview, group, preview and record tools advertise the inline `ui://lumos/access-review-v3.html` resource. The tools return structured results for both ChatGPT and the component.
 
 | Tool | Contract |
 | --- | --- |
@@ -10,7 +10,7 @@ Run with `--scenario chatgpt --assistant-host chatgpt_work`. The scenario shares
 | `get_review_group` | Read either the verified offboarding roster or Alex’s remaining grants with original Albus reasoning and Lumos evidence references. |
 | `get_evidence` | Read item-scoped evidence from Lumos. The private transcript lives in a separate connector. |
 | `preview_offboarding_batch` | Validate the selected termination grants and preview the exact rejects. |
-| `preview_alex_batch` | Preview supported judgments for Alex using item IDs, versions and allowlisted policy reason codes. Show original Albus and agent judgments separately. |
+| `preview_alex_batch` | Preview supported judgments using item IDs, versions and allowlisted policy reason codes. When the work call verifies the handoff and explains the lookup, include the bounded `work_context` finding for Accounts Receivable. The resulting summary appears before confirmation and is saved on that grant's receipt. |
 | `record_review_batch` | Submit the signed preview after explicit reviewer confirmation. Return per-grant receipts or conflicts and the updated queue. |
 
 Previewing does not write decisions or drafts. The server signs the exact decisions and run ID. The signature also identifies an idempotent submission. A reset invalidates previews, and an item changed or recorded since preview returns a conflict. ChatGPT owns its approval UI. The simulator records the authenticated host's confirmation assertion rather than acting as a production authorization service.
