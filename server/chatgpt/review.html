@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lumos access review</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --paper: light-dark(#fff, #212121);
+    --ink: light-dark(#181820, #f1f1f4);
+    --muted: light-dark(#54576a, #b8b9c7);
+    --line: light-dark(#e0e1e9, #474756);
+    --wash: light-dark(#f5f5fa, #2c2c37);
+    --accent: light-dark(#4e39a4, #cbbdff);
+    --accent-bg: light-dark(#f0ebff, #372d52);
+    --danger: light-dark(#992d42, #ffb2bf);
+    font: 14px/1.45 system-ui, sans-serif;
+    color: var(--ink);
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; }
+  main { background: var(--paper); border: 1px solid var(--line); border-radius: 18px; padding: clamp(14px, 4vw, 22px); }
+  h1, h2, h3, p { margin: 0; }
+  h1 { font-size: clamp(17px, 4vw, 22px); line-height: 1.18; }
+  h2 { font-size: 17px; }
+  h3 { font-size: 15px; }
+  small { color: var(--muted); }
+  .muted { color: var(--muted); }
+  .brand { color: var(--accent); font-weight: 700; letter-spacing: .02em; font-size: 12px; margin-bottom: 4px; }
+  header, .actions, .selection { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  header, .selection { justify-content: space-between; }
+  .progress-label, .badge { border-radius: 999px; padding: 4px 9px; background: var(--wash); font-size: 12px; font-weight: 650; }
+  progress { display: block; width: 100%; height: 7px; margin: 13px 0 16px; accent-color: var(--accent); }
+  #status:empty { display: none; }
+  #status { padding: 9px 11px; margin-bottom: 12px; border-radius: 8px; background: var(--wash); }
+  #status.error { color: var(--danger); }
+  .grid, .comparison { display: grid; gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 8px; }
+  .tile, .comparison > div { padding: 11px; background: var(--wash); border-radius: 10px; min-width: 0; }
+  .tile strong { display: block; font-size: 26px; line-height: 1.05; }
+  .tile p, .comparison p { margin-top: 4px; overflow-wrap: anywhere; }
+  .comparison .agent { background: var(--accent-bg); }
+  .comparison .label { color: var(--muted); font-size: 12px; }
+  .comparison strong { display: block; }
+  .comparison .reject { color: var(--danger); }
+  .actions, .comparison, details, .evidence, article + article { margin-top: 10px; }
+  article { padding: 10px 0; }
+  article + article { border-top: 1px solid var(--line); }
+  button { min-height: 40px; border: 1px solid var(--line); border-radius: 8px; padding: 6px 11px; background: var(--paper); color: var(--ink); font: inherit; font-weight: 650; cursor: pointer; }
+  button.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  button:disabled { cursor: default; opacity: .55; }
+  :is(button, input, summary):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; text-align: left; }
+  :is(th, td) { padding: 7px 5px; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+  thead { color: var(--muted); font-size: 12px; }
+  .checkbox { width: 34px; }
+  input[type=checkbox] { accent-color: var(--accent); }
+  summary { cursor: pointer; font-weight: 650; padding: 4px 0; }
+  .evidence { background: var(--wash); border-radius: 8px; padding: 10px; }
+  .evidence p { white-space: pre-wrap; overflow-wrap: anywhere; }
+  @media (max-width: 360px) {
+    .comparison { grid-template-columns: 1fr; }
+    button { min-height: 44px; }
+  }
+</style>
+</head>
+<body>
+<main aria-labelledby="title">
+  <header>
+    <div><p class="brand">Lumos · Access Reviews</p><h1 id="title">Loading review…</h1></div>
+    <span id="progress-label" class="progress-label" hidden></span>
+  </header>
+  <progress id="progress" aria-label="Decisions recorded" hidden></progress>
+  <div id="status" role="status" aria-live="polite"></div>
+  <section id="view" aria-label="Review step"></section>
+</main>
+<script>
+(() => {
+  const title = document.querySelector("#title");
+  const progressLabel = document.querySelector("#progress-label");
+  const progress = document.querySelector("#progress");
+  const status = document.querySelector("#status");
+  const view = document.querySelector("#view");
+  const pending = new Map();
+  let sequence = 0;
+  let data;
+  let busy = false;
+  let selected = new Set();
+
+  function send(method, params) {
+    window.parent.postMessage({ jsonrpc: "2.0", method, params }, "*");
+  }
+
+  function request(method, params) {
+    const id = ++sequence;
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        pending.delete(id);
+        reject(new Error("ChatGPT did not return a result. Refresh the review to check its status."));
+      }, 180000);
+      pending.set(id, { resolve, reject, timeout });
+      window.parent.postMessage({ jsonrpc: "2.0", id, method, params }, "*");
+    });
+  }
+
+  function tell(message, isError = false) {
+    status.textContent = message;
+    status.classList.toggle("error", isError);
+  }
+
+  function node(tag, content = "", className = "") {
+    const result = document.createElement(tag);
+    if (content) result.textContent = content;
+    if (className) result.className = className;
+    return result;
+  }
+
+  function button(label, action, primary = false) {
+    const control = node("button", label, primary ? "primary" : "");
+    control.type = "button";
+    control.addEventListener("click", () => run(action));
+    return control;
+  }
+
+  function actions(...controls) {
+    const row = node("div", "", "actions");
+    row.append(...controls);
+    return row;
+  }
+
+  async function run(action) {
+    if (busy) return;
+    busy = true;
+    view.inert = true;
+    view.setAttribute("aria-busy", "true");
+    tell("");
+    try {
+      await action();
+    } catch (error) {
+      tell(error.message || "ChatGPT could not complete that action. Try again.", true);
+    } finally {
+      busy = false;
+      view.inert = false;
+      view.setAttribute("aria-busy", "false");
+    }
+  }
+
+  function acceptResult(next) {
+    if (!next?.review || !next.view) return;
+    if (next.view === "offboarding" &&
+        (data?.view !== next.view || data.review.run_id !== next.review.run_id ||
+         data.items.map(item => item.id).join() !== next.items.map(item => item.id).join())) {
+      const previous = data?.view === "proposal" && data.group === "offboarding" &&
+        data.review.run_id === next.review.run_id ? new Set(data.decisions.map(item => item.item_id)) : null;
+      selected = new Set(next.items.filter(item => !previous || previous.has(item.id)).map(item => item.id));
+    }
+    data = next;
+    render();
+    if (next.results) {
+      const recorded = next.results.filter(item => item.status === "recorded").length;
+      const skipped = next.results.length - recorded;
+      tell(skipped ? `${recorded} recorded · ${skipped} need a fresh review` :
+        `${recorded} recorded · ${next.review.pending} remaining`, skipped > 0);
+    }
+  }
+
+  window.addEventListener("message", (event) => {
+    if (event.source !== window.parent || event.data?.jsonrpc !== "2.0") return;
+    const message = event.data;
+    if (message.method === "ui/notifications/tool-result") {
+      if (message.params?.isError) tell(message.params.content?.[0]?.text || "The review tool failed.", true);
+      else acceptResult(message.params?.structuredContent);
+    } else if (message.method === "ui/notifications/tool-cancelled") {
+      tell(message.params?.reason || "The action was cancelled.");
+    } else if (pending.has(message.id)) {
+      const { resolve, reject, timeout } = pending.get(message.id);
+      pending.delete(message.id);
+      clearTimeout(timeout);
+      if (message.error) reject(new Error(message.error.message));
+      else resolve(message.result);
+    }
+  });
+
+  const ready = request("ui/initialize", {
+    appInfo: { name: "lumos-access-review", version: "1.0.0" },
+    appCapabilities: {},
+    protocolVersion: "2026-01-26"
+  }).then(() => send("ui/notifications/initialized", {}));
+  ready.catch(() => tell("ChatGPT could not connect to the review panel. Continue in the conversation.", true));
+
+  const resize = new ResizeObserver(() => send("ui/notifications/size-changed", {
+    height: Math.ceil(document.body.getBoundingClientRect().height)
+  }));
+  ready.then(() => resize.observe(document.body), () => {});
+
+  async function tool(name, args = {}) {
+    await ready;
+    const result = await request("tools/call", { name, arguments: args });
+    if (result?.isError || !result?.structuredContent) {
+      throw new Error(result?.content?.[0]?.text || "The review tool returned no data.");
+    }
+    acceptResult(result.structuredContent);
+    return result.structuredContent;
+  }
+
+  async function askChatGPT(prompt) {
+    await ready;
+    const result = await request("ui/message", { role: "user", content: [{ type: "text", text: prompt }] });
+    if (result?.isError) throw new Error("ChatGPT could not start the follow-up. Ask in the conversation.");
+    tell("Continue with ChatGPT in the conversation.");
+  }
+
+  function shareSelection() {
+    request("ui/update-model-context", {
+      structuredContent: { review_id: data.review.review_id, run_id: data.review.run_id,
+        selected_offboarding_item_ids: [...selected] }
+    }).catch(() => {});
+  }
+
+  const refresh = () => tool("open_access_review");
+  const group = name => tool("get_review_group", { group: name });
+  const label = value => ({ accept: "Accept", reject: "Reject", retain: "Approve", revoke: "Reject" })[value] || value;
+
+  function overview() {
+    const { groups, pending: remaining } = data.review;
+    if (!remaining) {
+      view.append(node("h2", "All decisions recorded"),
+        node("p", "The synthetic review is complete. Access removal is simulated.", "muted"));
+      if (data.review.reversal_recorded) {
+        view.append(actions(button("Draft Knowledge Hub follow-up", () => askChatGPT(
+          "Draft an unsent, role-level IT request to verify the handoff and update the Active Directory Knowledge Hub. " +
+          "Keep names, private quotes and source identifiers out."
+        ))));
+      }
+      return;
+    }
+    const grid = node("div", "", "grid");
+    view.append(node("p", `${data.review.total} permissions across ${data.review.people} people`, "muted"));
+    for (const [count, heading, detail] of [
+      [groups.offboarding, "Offboarding grants", "Verified HR terminations"],
+      [groups.alex, "Alex Rivera", "Compare Albus and ChatGPT"],
+    ]) {
+      const tile = node("div", "", "tile");
+      tile.append(node("strong", String(count)), node("p", heading), node("small", detail));
+      grid.append(tile);
+    }
+    const controls = [];
+    if (groups.offboarding) controls.push(button(`Review ${groups.offboarding} offboarding grants`, () => group("offboarding"), true));
+    if (groups.alex) controls.push(button("Review Alex’s permissions", () => group("alex"), !groups.offboarding));
+    view.append(grid, actions(...controls));
+  }
+
+  function roster(items, selectable) {
+    const table = node("table");
+    table.setAttribute("aria-label", "Exact grants in this batch");
+    const header = node("tr");
+    const headings = selectable ? ["Select", "Person", "Permission"] : ["Person", "Permission", "Decision"];
+    for (const heading of headings) {
+      const cell = node("th", heading, heading === "Select" ? "checkbox" : "");
+      cell.scope = "col";
+      header.append(cell);
+    }
+    table.append(node("thead"));
+    table.tHead.append(header);
+    const body = table.createTBody();
+    for (const item of items) {
+      const row = body.insertRow();
+      if (selectable) {
+        const input = node("input");
+        input.type = "checkbox";
+        input.checked = selected.has(item.id);
+        input.setAttribute("aria-label", `Include ${item.person}, ${item.entitlement}`);
+        input.addEventListener("change", () => {
+          if (input.checked) selected.add(item.id);
+          else selected.delete(item.id);
+          const preview = document.querySelector("#preview");
+          preview.textContent = `Preview ${selected.size} rejects`;
+          preview.disabled = !selected.size;
+          shareSelection();
+        });
+        row.insertCell().append(input);
+      }
+      row.insertCell().textContent = item.person;
+      row.insertCell().textContent = item.entitlement;
+      if (!selectable) row.insertCell().textContent = label(item.outcome);
+    }
+    return table;
+  }
+
+  function evidenceButton(ids, container) {
+    return button("View Lumos evidence", async () => {
+      const result = await tool("get_evidence", { evidence_ids: ids });
+      container.replaceChildren();
+      for (const record of result.records) {
+        const detail = node("details", "", "evidence");
+        detail.append(node("summary", record.title), node("p", record.excerpt));
+        container.append(detail);
+      }
+      if (container.firstChild) container.firstChild.open = true;
+    });
+  }
+
+  function offboarding() {
+    view.append(node("h2", "Offboarding · bulk reject"));
+    if (!data.items.length) {
+      view.append(node("p", "All offboarding grants are recorded.", "muted"), actions(button("Back to overview", refresh)));
+      return;
+    }
+    const comparison = node("div", "", "comparison");
+    comparison.append(verdict("Albus", "Reject", data.albus_basis),
+      verdict("ChatGPT · Agree", "Reject", "The verified roster and removal policy cover each grant.", true));
+    const details = node("details");
+    details.append(node("summary", `Inspect or edit ${data.items.length} grants`), roster(data.items, true));
+    const preview = button(`Preview ${selected.size} rejects`, () => tool("preview_offboarding_batch", {
+      run_id: data.review.run_id, item_ids: data.items.filter(item => selected.has(item.id)).map(item => item.id)
+    }), true);
+    preview.id = "preview";
+    preview.disabled = !selected.size;
+    const evidence = node("div");
+    view.append(comparison, details, actions(preview, evidenceButton(data.evidence_ids, evidence),
+      button("Back to overview", refresh)), evidence);
+  }
+
+  function verdict(source, decision, reason, agent = false) {
+    const box = node("div", "", agent ? "agent" : "");
+    box.append(node("span", source, "label"), node("strong", decision, decision === "Reject" ? "reject" : ""),
+      node("p", reason, "muted"));
+    return box;
+  }
+
+  function alex() {
+    view.append(node("h2", "Alex Rivera’s permissions"));
+    for (const item of data.items) {
+      const detail = node("article");
+      const comparison = node("div", "", "comparison");
+      comparison.append(verdict("Albus", label(item.original_recommendation.outcome), item.original_recommendation.basis),
+        verdict("ChatGPT", "Awaiting judgment", "Check Lumos policy and relevant work context.", true));
+      detail.append(node("h3", item.entitlement), comparison);
+      view.append(detail);
+    }
+    const controls = [];
+    if (data.items.length) {
+      controls.push(button("Check my work context", () => askChatGPT(
+        "Investigate the pending Alex Rivera grants in this Lumos review. Read their Lumos policy and activity. " +
+        "Use Dana Personal Context to look for Alex’s invoice follow-up call transcript if Accounts Receivable is pending. " +
+        "Compare your judgment with each Albus suggestion. Use preview_alex_batch for supported judgments only. " +
+        "Keep the transcript and private source details out of Lumos. Leave unsupported grants pending."
+      ), true));
+      const evidence = node("div");
+      controls.push(evidenceButton([...new Set(data.items.flatMap(item => item.evidence_refs))], evidence));
+      view.append(actions(...controls, button("Back to overview", refresh)), evidence);
+    } else {
+      view.append(node("p", "Both grants have decisions recorded.", "muted"), actions(button("Back to overview", refresh)));
+    }
+  }
+
+  function proposal() {
+    const { group: proposalGroup, decisions, batch_token: token } = data;
+    view.append(node("h2", `Confirm ${decisions.length} ${decisions.length === 1 ? "decision" : "decisions"}`));
+    if (proposalGroup === "offboarding") {
+      view.append(node("p", decisions[0].reason, "muted"), roster(decisions, false));
+    } else {
+      for (const item of decisions) {
+        const detail = node("article");
+        const comparison = node("div", "", "comparison");
+        comparison.append(verdict("Albus", label(item.original_recommendation), item.albus_basis),
+          verdict(`ChatGPT · ${item.stance === "agree" ? "Agree" : "Disagree"}`, label(item.outcome), item.reason, true));
+        detail.append(node("h3", `${item.person} · ${item.entitlement}`), comparison);
+        view.append(detail);
+      }
+    }
+    view.append(actions(button(`Record ${decisions.length} ${decisions.length === 1 ? "decision" : "decisions"}`,
+      () => tool("record_review_batch", { batch_token: token }), true),
+      button("Back to group", () => group(proposalGroup))));
+  }
+
+  function render() {
+    title.textContent = data.review.title;
+    progressLabel.hidden = false;
+    progressLabel.textContent = `${data.review.recorded} of ${data.review.total} recorded`;
+    progress.hidden = false;
+    progress.max = data.review.total;
+    progress.value = data.review.recorded;
+    view.replaceChildren();
+    ({ overview, offboarding, alex, proposal })[data.view]?.();
+  }
+})();
+</script>
+</body>
+</html>

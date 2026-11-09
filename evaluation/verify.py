@@ -15,7 +15,7 @@ PERSONAL_SERVER = SERVER.with_name("personal_context.py")
 
 @contextmanager
 def client(state, *options, scenario="warehouse"):
-    command = [sys.executable, str(PERSONAL_SERVER)] if state is None else [
+    command = [sys.executable, str(PERSONAL_SERVER), *options] if state is None else [
         sys.executable, str(SERVER), "--state", str(state), *options,
         *(["--scenario", scenario] if scenario else []),
     ]
@@ -333,6 +333,71 @@ def verify_default(state, report):
         assert codex("get_review_status", **review)["counts"]["pending"] == 34
 
 
+def verify_chatgpt(state, report):
+    with client(state, "--assistant-host", "chatgpt_work", scenario="chatgpt") as (rpc, tool):
+        tools = {entry["name"]: entry for entry in rpc("tools/list")["tools"]}
+        uri = tools["open_access_review"]["_meta"]["ui"]["resourceUri"]
+        assert rpc("resources/list")["resources"][0]["uri"] == uri
+        resource = rpc("resources/read", uri=uri)["contents"][0]
+        assert resource["mimeType"] == "text/html;profile=mcp-app"
+        assert "ui/initialize" in resource["text"] and "Check my work context" in resource["text"]
+        assert tools["preview_offboarding_batch"]["annotations"]["readOnlyHint"]
+        assert not tools["record_review_batch"]["annotations"]["readOnlyHint"]
+        assert "start_demo" not in tools and "submit_decisions" not in tools
+
+        opened = rpc("tools/call", name="open_access_review")["structuredContent"]["review"]
+        assert opened["total"] == 17 and opened["recorded"] == 0
+        assert opened["groups"] == {"offboarding": 15, "alex": 2}
+        run = {"run_id": opened["run_id"]}
+        roster = tool("get_review_group", group="offboarding")
+        assert len(roster["items"]) == 15 and "HR confirmed" in roster["albus_basis"]
+        ids = [item["id"] for item in roster["items"]]
+        assert "outside" in tool("preview_offboarding_batch", **run, item_ids=["AD-ACCOUNTS-RECEIVABLE"], error=True)
+        excluded = tool("preview_offboarding_batch", **run, item_ids=ids[:-1])
+        assert [row["item_id"] for row in excluded["decisions"]] == ids[:-1]
+        proposal = tool("preview_offboarding_batch", **run, item_ids=ids)
+        assert len(proposal["decisions"]) == 15
+        assert all(row["stance"] == "agree" and row["outcome"] == "revoke" for row in proposal["decisions"])
+        assert report()["events"] == []
+        token = proposal["batch_token"]
+        assert "invalid" in tool("record_review_batch", batch_token=token + "x", error=True)
+        bulk = tool("record_review_batch", batch_token=token)
+        assert bulk["review"]["groups"] == {"offboarding": 0, "alex": 2}
+        assert bulk["review"]["recorded"] == 15
+        assert tool("record_review_batch", batch_token=token) == bulk
+        assert tool("open_access_review")["review"]["run_id"] == opened["run_id"]
+
+        with client(None, "--transcript") as (_, personal):
+            transcript = personal("search_personal_context", person="Alex Rivera", topic="invoice follow-up")["results"][0]
+            assert transcript["source_type"] == "call_transcript"
+            assert "Sales Ops owns invoice" in transcript["excerpt"]
+            assert not tool("get_evidence", evidence_ids=[transcript["source_id"]])["records"]
+
+        alex = tool("get_review_group", group="alex")
+        assert [item["original_recommendation"]["outcome"] for item in alex["items"]] == ["accept", "reject"]
+        ids_and_codes = zip(alex["items"], ["no_current_invoice_duty", "no_finance_admin_assignment"])
+        judgments = [{"item_id": item["id"], "snapshot_version": item["snapshot_version"],
+                      "reason_code": code} for item, code in ids_and_codes]
+        assert "unsupported fields" in tool("preview_alex_batch", **run, error=True,
+                                            judgments=[judgments[0] | {"transcript": transcript["excerpt"]}])
+        assert "does not apply" in tool("preview_alex_batch", **run, error=True,
+                                        judgments=[judgments[0] | {"reason_code": judgments[1]["reason_code"]}])
+        proposal = tool("preview_alex_batch", **run, judgments=judgments)
+        assert [row["stance"] for row in proposal["decisions"]] == ["disagree", "agree"]
+        assert tool("open_access_review")["review"]["recorded"] == 15
+        final = tool("record_review_batch", batch_token=proposal["batch_token"])
+        assert final["review"]["recorded"] == 17 and final["review"]["pending"] == 0
+        assert final["review"]["reversal_recorded"]
+        audit = report()
+        assert len(audit["events"]) == 17
+        ar = next(item for item in audit["items"] if item["id"] == "AD-ACCOUNTS-RECEIVABLE")
+        assert ar["original_recommendation"]["outcome"] == "accept" and ar["receipt"]["outcome"] == "revoke"
+        assert all(value not in json.dumps(audit) for value in (transcript["source_id"], "Casey Brooks", "transition call"))
+        subprocess.run([sys.executable, str(SERVER), "reset", "--scenario", "chatgpt", "--state", str(state)], check=True)
+        assert "restarted" in tool("record_review_batch", batch_token=proposal["batch_token"], error=True)
+        assert tool("open_access_review")["review"]["recorded"] == 0
+
+
 if __name__ == "__main__":
     scratch = SERVER.parents[1] / 'state'
     scratch.mkdir(parents=True, exist_ok=True)
@@ -344,5 +409,8 @@ if __name__ == "__main__":
         state = Path(temp) / "tour.sqlite3"
         with browser_report(state, scenario=None) as (report, _):
             verify_default(state, report)
+        state = Path(temp) / "chatgpt.sqlite3"
+        with browser_report(state, scenario="chatgpt") as (report, _):
+            verify_chatgpt(state, report)
     print("PASS: 36-permission tour, stdio discovery, reviewer scope, evidence, confirmation, partial/stale writes, "
-          "idempotency, clean runs, simulation, browser round trip, and Work/Cowork MCP proposals.")
+          "idempotency, clean runs, simulation, browser round trip, Work/Cowork MCP proposals, and the 17-grant ChatGPT app.")

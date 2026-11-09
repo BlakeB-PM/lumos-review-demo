@@ -1,25 +1,18 @@
-# The one-minute access review demo
+# ChatGPT access review walkthrough
 
-Open the review workspace beside the assistant. A fresh campaign shows **36 permissions across 18 people**. Enable **Lumos Access Reviews** and **Dana Personal Context** in your assistant and use the prompt below. The [connection guide](connect-reviewer.md) covers each host.
+Reset the synthetic ChatGPT run before the audience joins. Open a fresh ChatGPT Work chat with **Lumos Access Reviews** and **Dana Personal Context** selected. Follow the [connection guide](connect-reviewer.md) to install both.
 
-> Help me complete my access review. Start with Alex Rivera’s permissions.
+> Help me do my access review.
 
-Dana Personal Context searches a [simulated private inbox](../personal-workspace/context/sales-handoff.md). Lumos provides the [simulated Knowledge Hub entry](../server/data/knowledge/knowledge-hub/AD-KH-SALES.md), which treats recent invoice lookups as a signal of ongoing work. Dana’s handoff explains why that signal is misleading for Alex.
-
-| Say or do | What this shows |
+| Reviewer action | What the audience sees |
 | --- | --- |
-| Show the **36** pending permissions, then search for **Alex Rivera** and point to **Accept** on Accounts Receivable. | Lumos sees a recent invoice lookup. That activity supports keeping the permission until you learn why the lookup happened. |
-| Start the review and show the personal-context lookup in the assistant’s tool activity. | The assistant searches for Alex and invoice follow-up. It uses the handoff to reinterpret the invoice lookup and checks the policy through Lumos. It proposes **Reject Accounts Receivable**, reversing Lumos, and agrees with Lumos on **Reject Finance Admin**. |
-| Read the proposed actions and say **“Confirm those two decisions.”** | The reviewer makes the call. The assistant records the decisions and the audit notes. Dana’s message stays in the personal workspace. |
-| Switch to **Reviewed** and open the Accounts Receivable audit note. **“Same employee, same title. The assistant knew the work had changed.”** | Show **Accept** in Suggestion and **Reject** in Review Action, with the audit note and cited policy. **34** permissions are still pending. |
-| Close with **“Draft an IT request to update the Lumos Knowledge Hub so the next review gets this right.”** | Show the assistant’s unsent IT request. The individual decision is already recorded. This separate request would carry the verified handoff into future reviews. |
+| Open the assigned review. | The inline panel shows **17 permissions across nine people**, with **15 offboarding grants** and **two grants for Alex Rivera**. |
+| Select **Review 15 offboarding grants**. Expand the roster or inspect the Lumos evidence. Select **Preview 15 rejects**. | Albus says **Reject** based on verified HR terminations and offboarding policy. ChatGPT agrees. The preview contains the exact people and permissions. |
+| Select **Record 15 decisions** and approve the write if ChatGPT prompts. | Lumos returns receipts. Progress moves to **15 of 17 recorded**, with Alex’s two grants remaining. |
+| Select **Review Alex’s permissions**, then **Check my work context**. | ChatGPT checks Lumos policy, activity and Knowledge Hub guidance, then retrieves the private call transcript from Dana Personal Context. Albus saw a recent invoice lookup and suggested **Accept**. The call explains that Alex looked up the invoice while handing work to Sales Ops. |
+| Compare the two proposed decisions, then select **Record 2 decisions**. | For **Accounts Receivable**, ChatGPT disagrees and recommends **Reject** because the policy requires a current invoice follow-up responsibility. For **Finance Admin**, ChatGPT agrees with **Reject** because Alex lacks the required assignment. |
+| Show **17 of 17 recorded**. Optionally open the audit report or select **Draft Knowledge Hub follow-up**. | The audit retains the original Albus Accept, the recorded Reject and a policy-based reason. The suggested follow-up asks IT to verify the role-level handoff and update the Active Directory Knowledge Hub. |
 
-**Draft IT request — Update Active Directory review context in the Lumos Knowledge Hub**
+To exercise an exception, deselect one offboarding grant before preview. Confirm that it stays in the queue and that the recorded count reflects the selection. To exercise missing context, disable Dana Personal Context and open the review in a chat without the transcript. Accounts Receivable should stay pending. Finance Admin can still be decided from Lumos evidence.
 
-Please confirm that Sales Ops now owns customer invoice follow-up. Then add this to the **Active Directory** access review context in the Knowledge Hub:
-
-> Sales Ops owns customer invoice follow-up. Recommend keeping Accounts Receivable access for people who currently handle that work. Use current responsibilities to assess access when a Sales title or past lookup is the only signal.
-
-Re-sync the review and check that the suggestions reflect who does the work today. [Lumos Knowledge Hub guidance](https://support.lumos.com/articles/6323349102-knowledge-hub-access-reviews)
-
-The permission examples come from the [Lumos product tour](https://www.lumos.com/product-tours/user-access-reviews). Alex and the handoff are fictional. The demo records decisions without changing real access.
+The transcript, speakers and private source ID stay out of Lumos calls and the audit. All people, evidence and decisions are synthetic. No real access changes.

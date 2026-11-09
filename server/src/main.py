@@ -106,7 +106,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.simulated_albus or args.action == "advance-snapshot":
         args.scenario = "warehouse"
-    state_name = "tour.sqlite3" if args.scenario == "tour" else "demo.sqlite3"
+    if args.scenario == "chatgpt" and args.action == "serve" and args.assistant_host != "chatgpt_work":
+        parser.error("The chatgpt scenario requires --assistant-host chatgpt_work when serving MCP.")
+    state_name = {"tour": "tour.sqlite3", "warehouse": "demo.sqlite3", "chatgpt": "chatgpt.sqlite3"}[args.scenario]
     reviews = Reviews(args.state or ROOT / "state" / state_name, args.simulated_albus, args.scenario)
     if args.action == "reset":
         reviews.reset()
@@ -117,5 +119,9 @@ if __name__ == "__main__":
         from report import serve_report
 
         serve_report(reviews, args.port, args.open, TOOLS["submit_decisions"][1], validate)
+    elif args.scenario == "chatgpt":
+        from chatgpt_review import serve_chatgpt
+
+        serve_chatgpt(reviews)
     else:
         serve(reviews, args.assistant_host)

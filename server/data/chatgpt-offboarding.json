@@ -1,0 +1,20 @@
+{
+  "effective_on": "2026-11-06",
+  "grants": [
+    ["AD-OFF-01", "Taylor Brooks", "Employee Directory"],
+    ["AD-OFF-02", "Taylor Brooks", "Sales Workspace"],
+    ["AD-OFF-03", "Avery Chen", "Employee Directory"],
+    ["AD-OFF-04", "Avery Chen", "Support Workspace"],
+    ["AD-OFF-05", "Robin Diaz", "Employee Directory"],
+    ["AD-OFF-06", "Robin Diaz", "Sales Workspace"],
+    ["AD-OFF-07", "Jamie Evans", "Employee Directory"],
+    ["AD-OFF-08", "Jamie Evans", "Operations Workspace"],
+    ["AD-OFF-09", "Cameron Flores", "Employee Directory"],
+    ["AD-OFF-10", "Cameron Flores", "Support Workspace"],
+    ["AD-OFF-11", "Drew Gupta", "Employee Directory"],
+    ["AD-OFF-12", "Drew Gupta", "Operations Workspace"],
+    ["AD-OFF-13", "Quinn Hall", "Employee Directory"],
+    ["AD-OFF-14", "Quinn Hall", "Sales Workspace"],
+    ["AD-OFF-15", "Emery James", "Employee Directory"]
+  ]
+}

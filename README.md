@@ -1,23 +1,35 @@
 # Lumos access review demo
 
-A synthetic Active Directory review inspired by the [Lumos product tour](https://www.lumos.com/product-tours/user-access-reviews). Lumos suggests keeping a Sales Account Executive’s invoice access based on role and recent usage. The personal assistant finds a handoff Lumos did not see, checks the policy, and proposes reversing that suggestion. The reviewer confirms and inspects the recorded decision and evidence in the browser. The demo needs Python 3.10+ and uses the standard library.
+A ChatGPT plugin demo for a synthetic Active Directory review. Start in ChatGPT with **Help me do my access review**. The inline panel helps the reviewer inspect and confirm **15 verified offboarding rejects** in one batch, then compare Albus and ChatGPT on **Alex Rivera’s two remaining grants**. A private call transcript shows why Alex’s latest invoice lookup supports a handoff rather than a continuing need for access.
 
-## Run the demo locally
+## Run the ChatGPT plugin
 
-For the full assistant walkthrough, install Python 3.10 or newer and the Codex CLI, and sign in to Codex desktop. The local demo server uses synthetic fixtures and needs no API key or Lumos account.
+The demo uses Python 3.10+ and a ChatGPT Work workspace that supports custom MCP plugins, embedded MCP Apps UI, and write tools. The review simulator uses synthetic data and needs no Lumos account.
 
 ```sh
 git clone https://github.com/BlakeB-PM/lumos-review-demo.git
 cd lumos-review-demo
 ```
 
-1. Register the local connector using the command below.
-2. Start the browser workspace and leave it open beside Codex.
-3. Open this clone’s **personal-workspace** folder as a local project in Codex desktop and say **Help me complete my access review.** Follow the [one-minute walkthrough](docs/demo-script.md).
+1. Follow [the ChatGPT setup guide](docs/connect-reviewer.md) to connect **Lumos Access Reviews** and **Dana Personal Context** separately.
+2. In a fresh ChatGPT chat, select both plugins and say **Help me do my access review.** Follow the [17-grant walkthrough](docs/demo-script.md).
+3. Use the panel to inspect the roster, preview the exact rejection batch, confirm it, and check Alex’s grants against the private transcript and Lumos policy.
 
-To explore just the review table and record synthetic decisions from the browser, skip connector setup and run the browser command below. For the full assistant walkthrough in ChatGPT Work or Claude Cowork, follow [Connect an assistant to Access Reviews](docs/connect-reviewer.md).
+For an optional audit view or a clean rehearsal:
 
-### Register the connector once
+```sh
+python server/src/main.py report --scenario chatgpt --open
+python server/src/main.py reset --scenario chatgpt
+python evaluation/verify.py
+```
+
+The reset is an operator action. Opening the review in ChatGPT resumes the existing state.
+
+## Legacy local tour
+
+The earlier 36-permission fixture remains available as the default local `tour` scenario. To run the legacy Codex walkthrough, install the Codex CLI, sign in to Codex desktop, register the connector below, and open this clone’s **personal-workspace** folder as a local project.
+
+### Register the local connector
 
 Windows PowerShell:
 
@@ -72,6 +84,6 @@ The command-line reset clears the demo decisions for a fresh run. The verifier u
 
 ## Boundaries
 
-The server scopes access to a fixed synthetic identity. The chat asks the reviewer to confirm the exact proposal. The server requires the client's confirmation assertion and records it as such. Directory separation illustrates how context moves. A local agent with broad filesystem access can still read sibling files. Revocation decisions and connector remediation are represented separately, with remediation set to `not_performed_in_simulation`.
+The server scopes access to a fixed synthetic identity. The panel shows the exact proposal before invoking the ChatGPT-approved record action. The signed batch binds its decisions to the current synthetic run. The transcript is read through a separate connector and the Lumos tools accept only bounded judgment codes for Alex. Revocation decisions and connector remediation are represented separately, with remediation set to `not_performed_in_simulation`.
 
 [Tool contracts](docs/tool-contracts.md) · [Flow diagram](docs/diagrams.md) · [Lumos Access Reviews](https://www.lumos.com/products/access-reviews)

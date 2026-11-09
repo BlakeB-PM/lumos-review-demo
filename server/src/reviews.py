@@ -11,7 +11,7 @@ from uuid import uuid4
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 REVIEWER = "reviewer-dana"
-SCENARIOS = {"tour": "AD-REVIEW", "warehouse": "Q4-DATA"}
+SCENARIOS = {"tour": "AD-REVIEW", "warehouse": "Q4-DATA", "chatgpt": "AD-REVIEW"}
 REMEDIATION = "not_performed_in_simulation"
 SEARCH_TOKEN = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 
@@ -51,6 +51,10 @@ class Reviews:
             _, metadata, body = path.read_text(encoding="utf-8").split("---", 2)
             source = json.loads(metadata)
             self.sources[source["id"]] = {**source, "excerpt": body.strip()}
+        if scenario == "chatgpt":
+            from chatgpt_fixture import load_chatgpt_fixture
+
+            load_chatgpt_fixture(self)
         self.albus = read_json(ROOT / "fixtures/albus-responses.json") if simulated_albus else None
         state_path.parent.mkdir(parents=True, exist_ok=True)
         with self.db() as db:
@@ -253,32 +257,36 @@ class Reviews:
 
     def prepare_review_batch(self, review_id, run_id, decisions, client):
         self.campaign(review_id)
-        ids = [decision["item_id"] for decision in decisions]
-        if len(ids) != len(set(ids)):
-            raise ValueError("Each item must appear only once in the batch.")
         proposal_id = str(uuid4())
         with self.db(write=True) as db:
             self.require_current_run(db, run_id)
-            preview = []
-            for decision in decisions:
-                item_id = decision["item_id"]
-                item = self.items.get(item_id)
-                if item is None or item["review_id"] != review_id:
-                    raise ValueError("Item is unavailable in this review.")
-                if decision["outcome"] not in item["allowed_actions"]:
-                    raise ValueError(f"Unsupported outcome for {item_id}.")
-                if decision["snapshot_version"] != self.version(db, item_id):
-                    raise ValueError(f"{item_id} changed. Refresh it before preparing the batch.")
-                if db.execute("SELECT 1 FROM decisions WHERE item_id = ?", (item_id,)).fetchone():
-                    raise ValueError(f"{item_id} has already been reviewed.")
-                if any(self.source_for(db, ref, item_id) is None for ref in decision["evidence_refs"]):
-                    raise ValueError(f"{item_id} has an unavailable evidence reference.")
-                preview.append({**decision, "person": item["person"], "entitlement": item["entitlement"],
-                                "original_recommendation": self.recommendations[item_id]["outcome"]})
+            preview = self.preview_decisions(db, review_id, decisions)
             db.execute("INSERT INTO proposals VALUES (?, ?, ?, ?, ?)",
                        (proposal_id, run_id, client, review_id, json.dumps(decisions)))
         return {"proposal_id": proposal_id, "review_id": review_id, "status": "awaiting_confirmation",
                 "decisions": preview}
+
+    def preview_decisions(self, db, review_id, decisions):
+        ids = [decision["item_id"] for decision in decisions]
+        if len(ids) != len(set(ids)):
+            raise ValueError("Each item must appear only once in the batch.")
+        preview = []
+        for decision in decisions:
+            item_id = decision["item_id"]
+            item = self.items.get(item_id)
+            if item is None or item["review_id"] != review_id:
+                raise ValueError("Item is unavailable in this review.")
+            if decision["outcome"] not in item["allowed_actions"]:
+                raise ValueError(f"Unsupported outcome for {item_id}.")
+            if decision["snapshot_version"] != self.version(db, item_id):
+                raise ValueError(f"{item_id} changed. Refresh it before preparing the batch.")
+            if db.execute("SELECT 1 FROM decisions WHERE item_id = ?", (item_id,)).fetchone():
+                raise ValueError(f"{item_id} has already been reviewed.")
+            if any(self.source_for(db, ref, item_id) is None for ref in decision["evidence_refs"]):
+                raise ValueError(f"{item_id} has an unavailable evidence reference.")
+            preview.append({**decision, "person": item["person"], "entitlement": item["entitlement"],
+                            "original_recommendation": self.recommendations[item_id]["outcome"]})
+        return preview
 
     def record_review_batch(self, proposal_id, client):
         with self.db() as db:
