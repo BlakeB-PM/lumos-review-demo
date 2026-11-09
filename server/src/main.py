@@ -97,13 +97,16 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Local Lumos review simulator")
     parser.add_argument("action", choices=["serve", "reset", "advance-snapshot", "report"], nargs="?", default="serve")
     parser.add_argument("--state", type=Path)
-    parser.add_argument("--scenario", choices=SCENARIOS, default="tour")
+    parser.add_argument("--scenario", choices=SCENARIOS,
+                        help="Choose a fixture. The browser report defaults to the current ChatGPT review.")
     parser.add_argument("--simulated-albus", action="store_true")
     parser.add_argument("--assistant-host", choices=["chatgpt_work", "claude_cowork"],
                         help="Expose the reviewer workflow without demo reset or direct submission")
     parser.add_argument("--port", type=int, default=8765, help="Local audit report port")
     parser.add_argument("--open", action="store_true", help="Open the audit report in your browser")
     args = parser.parse_args()
+    if args.scenario is None:
+        args.scenario = "chatgpt" if args.action == "report" else "tour"
     if args.simulated_albus or args.action == "advance-snapshot":
         args.scenario = "warehouse"
     if args.scenario == "chatgpt" and args.action == "serve" and args.assistant_host != "chatgpt_work":

@@ -68,7 +68,7 @@ function renderRows() {
     return `<tr>
       <td>${recorded ? "" : `<input type="checkbox" data-select="${id}" aria-label="Select ${person}, ${escapeHtml(item.entitlement)}" ${selected.has(item.id) ? "checked" : ""}>`}</td>
       <td><button type="button" class="item-button" data-item="${id}" aria-label="${label} details">${person}</button></td>
-      <td>${escapeHtml(item.role)}</td>
+      <td>${escapeHtml(item.role ?? "—")}</td>
       <td>${escapeHtml(item.team ?? "—")}</td>
       <td><div class="entitlement">${permission}</div>${item.privileged ? '<span class="privileged">Privileged</span>' : tour ? "" : `<div class="subline">Permission · v${item.snapshot_version}</div>`}</td>
       <td>${item.employment_status ? pill(item.employment_status === "Active" ? "retain" : "revoke", item.employment_status) : "—"}</td>

@@ -15,7 +15,7 @@ The first tool call should be `open_access_review`, with **17 grants** in the ov
 Run these commands from the repository root as needed.
 
 ~~~sh
-python server/src/main.py report --scenario chatgpt --open
+python server/src/main.py report --open
 python server/src/main.py reset --scenario chatgpt
 python evaluation/verify.py
 ~~~

@@ -20,9 +20,9 @@ The commands update existing registrations under the same names. The `chatgpt_wo
 
 1. Restart the desktop app after registering the servers.
 2. Open **personal-workspace** from this clone as a local project and start a fresh local chat.
-3. Say **Help me do my access review.** The first tool call should be `open_access_review`. The opening overview should show **15 offboarding grants** and **two grants for Alex**.
+3. Say **Help me do my access review.** The chat should call `open_access_review` and wait at the overview. A fresh run shows **17 left to review**, with **15 offboarding grants** and **two grants for Alex**.
 4. Follow the [walkthrough](demo-script.md). The connector supplies an inline review panel to hosts that render MCP Apps resources. If your local client shows only tool results, continue in chat with the same review and batch tools.
 
 If the first call is `list_my_reviews` or the overview shows 36 grants, run `codex mcp get lumos_review_demo` and verify the scenario and host flags above. Restart the app and start a fresh chat after fixing the registration.
 
-To start a clean rehearsal, run `python server/src/main.py reset --scenario chatgpt`. To inspect saved decisions in the browser, run `python server/src/main.py report --scenario chatgpt --open`. If you override the SQLite path, use the same `--state` with the connector, report, and reset.
+To inspect saved decisions in the browser, run `python server/src/main.py report --open`. The report defaults to the same 17-grant campaign and database as the chat connector. Add `--port 8766` if that is the port you use for the demo. If you override the SQLite path, use the same `--state` with the connector, report, and reset. To start a clean rehearsal, run `python server/src/main.py reset --scenario chatgpt`.

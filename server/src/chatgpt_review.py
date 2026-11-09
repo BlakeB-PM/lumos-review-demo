@@ -11,7 +11,7 @@ from mcp_stdio import array, integer, obj, serve_stdio, string
 from reviews import REMEDIATION, ROOT
 
 
-RESOURCE_URI = "ui://lumos/access-review-v1.html"
+RESOURCE_URI = "ui://lumos/access-review-v2.html"
 MIME_TYPE = "text/html;profile=mcp-app"
 CLIENT = "chatgpt_work"
 JUDGMENTS = {
@@ -25,10 +25,12 @@ JUDGMENTS = {
 TOOLS = {
     "open_access_review": (
         "Open or resume the assigned access review when the reviewer asks to start, do or complete it. "
-        "Shows the inline overview and counts. Start here. Never resets the review.", obj(),
+        "Shows the full queue, progress, and suggested order. For an opening request, show this overview "
+        "and wait for the reviewer to choose a group. Never resets the review.", obj(),
     ),
     "get_review_group": (
-        "Open one group in the review panel. Offboarding shows the exact HR-verified rejection roster. "
+        "Open one group after the reviewer chooses it in the panel or in chat. "
+        "Offboarding shows the exact HR-verified rejection roster. "
         "Alex shows both grants and Albus's recommendation and rationale.", obj(("group",), group={"enum": ["offboarding", "alex"]}),
     ),
     "get_evidence": (
@@ -36,7 +38,7 @@ TOOLS = {
         obj(("evidence_ids",), evidence_ids=array(string())),
     ),
     "preview_offboarding_batch": (
-        "Preview Reject for exactly the selected offboarding grants and show the signed batch for review. "
+        "After the reviewer inspects a group and asks to preview, show Reject for the exact selected grants. "
         "Use the current run ID and exact selected item IDs. This does not record decisions.",
         obj(("run_id", "item_ids"), run_id=string(), item_ids=array(string(), 15)),
     ),
@@ -54,10 +56,14 @@ TOOLS = {
         obj(("batch_token",), batch_token=string(20000)),
     ),
 }
-INSTRUCTIONS = """When the reviewer asks to start, do or complete an access review, call open_access_review.
-Show its panel with one short sentence. Suggest reviewing the offboarding batch first. Let the reviewer
-change order, inspect a roster or exclude an item. Always preview and obtain explicit confirmation before
-recording decisions. Use Lumos receipts for progress and continue to the next pending group.
+INSTRUCTIONS = """For a general request to start, do or complete an access review, call only open_access_review
+and end the turn after the overview. Show total, recorded and remaining counts, and how many grants are
+in each remaining group. Recommend a starting group and wait for the reviewer to choose. Do not load
+a roster, investigate Alex, preview, or ask for confirmation on this opening turn.
+
+Once the reviewer chooses a group, show that group and let them inspect or change its selection. Preview
+only when requested. Obtain explicit confirmation of the exact preview before recording decisions. Then
+show progress from the receipts and recommend the next step.
 
 For Alex Rivera, read get_review_group(group="alex") and retrieve its Lumos evidence. For Accounts Receivable,
 search the separate Dana Personal Context connector for Alex Rivera and invoice follow-up, or read the
@@ -95,6 +101,7 @@ class ChatGPTReview:
             "recorded": len(reviews.items) - len(pending),
             "pending": len(pending),
             "groups": {"offboarding": bulk, "alex": len(pending) - bulk},
+            "recommended_group": "offboarding" if bulk else "alex" if pending else None,
             "reversal_recorded": (ACCOUNTS_RECEIVABLE in recorded and
                                   json.loads(recorded[ACCOUNTS_RECEIVABLE])["outcome"] == "revoke"),
         }

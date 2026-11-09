@@ -341,17 +341,26 @@ def verify_chatgpt(state, report):
         resource = rpc("resources/read", uri=uri)["contents"][0]
         assert resource["mimeType"] == "text/html;profile=mcp-app"
         assert "ui/initialize" in resource["text"] and "Check my work context" in resource["text"]
+        assert "left to review" in resource["text"] and "Suggested review order" in resource["text"]
         assert tools["preview_offboarding_batch"]["annotations"]["readOnlyHint"]
         assert not tools["record_review_batch"]["annotations"]["readOnlyHint"]
         assert "start_demo" not in tools and "submit_decisions" not in tools
 
-        opened = rpc("tools/call", name="open_access_review")["structuredContent"]["review"]
+        opening = rpc("tools/call", name="open_access_review")["structuredContent"]
+        assert opening["view"] == "overview" and "decisions" not in opening
+        opened = opening["review"]
         assert opened["total"] == 17 and opened["recorded"] == 0
         assert opened["groups"] == {"offboarding": 15, "alex": 2}
+        assert opened["recommended_group"] == "offboarding"
+        assert report()["run_id"] == opened["run_id"] and len(report()["items"]) == opened["total"]
         run = {"run_id": opened["run_id"]}
         roster = tool("get_review_group", group="offboarding")
         assert len(roster["items"]) == 15 and "HR confirmed" in roster["albus_basis"]
         ids = [item["id"] for item in roster["items"]]
+        by_id = {item["id"]: item for item in report()["items"]}
+        assert [(by_id[item["id"]]["person"], by_id[item["id"]]["entitlement"]) for item in roster["items"]] == [
+            (item["person"], item["entitlement"]) for item in roster["items"]
+        ]
         assert "outside" in tool("preview_offboarding_batch", **run, item_ids=["AD-ACCOUNTS-RECEIVABLE"], error=True)
         excluded = tool("preview_offboarding_batch", **run, item_ids=ids[:-1])
         assert [row["item_id"] for row in excluded["decisions"]] == ids[:-1]
@@ -364,6 +373,11 @@ def verify_chatgpt(state, report):
         bulk = tool("record_review_batch", batch_token=token)
         assert bulk["review"]["groups"] == {"offboarding": 0, "alex": 2}
         assert bulk["review"]["recorded"] == 15
+        assert bulk["review"]["recommended_group"] == "alex"
+        browser_receipts = {item["id"]: item["receipt"] for item in report()["items"] if item["receipt"]}
+        assert browser_receipts.keys() == set(ids)
+        assert all(browser_receipts[row["item_id"]]["receipt_id"] == row["receipt_id"] and
+                   browser_receipts[row["item_id"]]["outcome"] == "revoke" for row in bulk["results"])
         assert tool("record_review_batch", batch_token=token) == bulk
         assert tool("open_access_review")["review"]["run_id"] == opened["run_id"]
 
@@ -407,10 +421,10 @@ if __name__ == "__main__":
             run(state, report, record)
             verify_assistant(state, report, record)
         state = Path(temp) / "tour.sqlite3"
-        with browser_report(state, scenario=None) as (report, _):
+        with browser_report(state, scenario="tour") as (report, _):
             verify_default(state, report)
         state = Path(temp) / "chatgpt.sqlite3"
-        with browser_report(state, scenario="chatgpt") as (report, _):
+        with browser_report(state, scenario=None) as (report, _):
             verify_chatgpt(state, report)
     print("PASS: 36-permission tour, stdio discovery, reviewer scope, evidence, confirmation, partial/stale writes, "
           "idempotency, clean runs, simulation, browser round trip, Work/Cowork MCP proposals, and the 17-grant ChatGPT app.")

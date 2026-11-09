@@ -31,15 +31,19 @@
   .brand { color: var(--accent); font-weight: 700; letter-spacing: .02em; font-size: 12px; margin-bottom: 4px; }
   header, .actions, .selection { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
   header, .selection { justify-content: space-between; }
-  .progress-label, .badge { border-radius: 999px; padding: 4px 9px; background: var(--wash); font-size: 12px; font-weight: 650; }
+  .progress-label { border-radius: 999px; padding: 4px 9px; background: var(--wash); font-size: 12px; font-weight: 650; }
   progress { display: block; width: 100%; height: 7px; margin: 13px 0 16px; accent-color: var(--accent); }
   #status:empty { display: none; }
   #status { padding: 9px 11px; margin-bottom: 12px; border-radius: 8px; background: var(--wash); }
   #status.error { color: var(--danger); }
-  .grid, .comparison { display: grid; gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 8px; }
-  .tile, .comparison > div { padding: 11px; background: var(--wash); border-radius: 10px; min-width: 0; }
-  .tile strong { display: block; font-size: 26px; line-height: 1.05; }
-  .tile p, .comparison p { margin-top: 4px; overflow-wrap: anywhere; }
+  .comparison { display: grid; gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .comparison > div { padding: 11px; background: var(--wash); border-radius: 10px; min-width: 0; }
+  .comparison p { margin-top: 4px; overflow-wrap: anywhere; }
+  .plan { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 7px; }
+  .plan li { display: flex; align-items: center; gap: 10px; padding: 9px 11px; border-radius: 10px; background: var(--wash); }
+  .plan li.next { background: var(--accent-bg); }
+  .plan li > strong { font-size: 22px; line-height: 1; min-width: 1.6em; text-align: center; font-variant-numeric: tabular-nums; }
+  .plan li small { display: block; }
   .comparison .agent { background: var(--accent-bg); }
   .comparison .label { color: var(--muted); font-size: 12px; }
   .comparison strong { display: block; }
@@ -223,7 +227,7 @@
   const label = value => ({ accept: "Accept", reject: "Reject", retain: "Approve", revoke: "Reject" })[value] || value;
 
   function overview() {
-    const { groups, pending: remaining } = data.review;
+    const { groups, pending: remaining, recommended_group: nextGroup, total, people } = data.review;
     if (!remaining) {
       view.append(node("h2", "All decisions recorded"),
         node("p", "The synthetic review is complete. Access removal is simulated.", "muted"));
@@ -235,20 +239,26 @@
       }
       return;
     }
-    const grid = node("div", "", "grid");
-    view.append(node("p", `${data.review.total} permissions across ${data.review.people} people`, "muted"));
-    for (const [count, heading, detail] of [
-      [groups.offboarding, "Offboarding grants", "Verified HR terminations"],
-      [groups.alex, "Alex Rivera", "Compare Albus and ChatGPT"],
+    view.append(node("h2", `${remaining} ${remaining === 1 ? "permission" : "permissions"} left to review`),
+      node("p", `${total} total across ${people} people. Choose a group to get started.`, "muted"));
+    const plan = node("ol", "", "plan");
+    plan.setAttribute("aria-label", "Suggested review order");
+    for (const [name, heading, detail] of [
+      ["offboarding", "Ready for bulk review", "Verified HR terminations · Albus recommends Reject"],
+      ["alex", "Need a closer look", "Alex Rivera · Compare policy, Albus, and your work context"],
     ]) {
-      const tile = node("div", "", "tile");
-      tile.append(node("strong", String(count)), node("p", heading), node("small", detail));
-      grid.append(tile);
+      if (!groups[name]) continue;
+      const next = name === nextGroup;
+      const step = node("li", "", next ? "next" : "");
+      const copy = node("div");
+      copy.append(node("strong", next ? `Start here · ${heading}` : heading), node("small", detail));
+      step.append(node("strong", String(groups[name])), copy);
+      plan.append(step);
     }
     const controls = [];
     if (groups.offboarding) controls.push(button(`Review ${groups.offboarding} offboarding grants`, () => group("offboarding"), true));
     if (groups.alex) controls.push(button("Review Alex’s permissions", () => group("alex"), !groups.offboarding));
-    view.append(grid, actions(...controls));
+    view.append(plan, actions(...controls));
   }
 
   function roster(items, selectable) {

@@ -2,7 +2,7 @@
 
 ## ChatGPT plugin
 
-Run with `--scenario chatgpt --assistant-host chatgpt_work`. The scenario has a separate default SQLite file and a 17-grant queue. The overview, group, preview and record tools advertise the inline `ui://lumos/access-review-v1.html` resource. The tools return structured results for both ChatGPT and the component.
+Run with `--scenario chatgpt --assistant-host chatgpt_work`. The scenario shares its default SQLite file and 17-grant queue with the browser report. The overview, group, preview and record tools advertise the inline `ui://lumos/access-review-v2.html` resource. The tools return structured results for both ChatGPT and the component.
 
 | Tool | Contract |
 | --- | --- |
