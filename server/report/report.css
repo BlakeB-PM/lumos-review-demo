@@ -8,6 +8,7 @@ button { cursor: pointer; }
 .topbar { min-height: 44px; padding: 12px 22px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .breadcrumb { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; color: var(--muted); font-size: 12px; }
 .prototype { border: 1px solid var(--line); border-radius: 18px; padding: 5px 10px; white-space: nowrap; font-size: 11px; color: var(--muted); }
+.demo-tools { display: flex; align-items: center; gap: 8px; white-space: nowrap; font-size: 12px; }
 .workspace-header { display: flex; justify-content: space-between; align-items: center; gap: 18px; padding: 11px 22px 15px; }
 .app-heading, .header-tools { display: flex; align-items: center; gap: 12px; }
 .app-heading { flex-wrap: wrap; gap: 8px; }
@@ -84,6 +85,7 @@ dialog { color: #202124; width: min(495px, calc(100% - 26px)); border: 1px solid
 dialog::backdrop { background: #1d243950; }
 .drawer { margin: 0 0 0 auto; min-height: 100dvh; border-radius: 0; }
 .dialog-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .close { border: 0; background: #f0f2f5; color: #36455d; font-size: 19px; width: 31px; height: 31px; border-radius: 50%; }
 .eyebrow { margin: 0 0 7px; color: var(--muted); font-size: 11px; letter-spacing: .07em; }
 .detail-section { border-top: 1px solid var(--line); margin-top: 14px; padding-top: 11px; }

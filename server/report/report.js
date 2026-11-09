@@ -194,6 +194,7 @@ function render() {
   byId("total").textContent = items.length;
   byId("recorded").textContent = recorded;
   byId("pending").textContent = items.length - recorded;
+  byId("open-reset").disabled = false;
   byId("attention").textContent = `${failures} needing attention`;
   byId("attention").hidden = !failures;
   if (!failures) {
@@ -306,6 +307,37 @@ async function recordDecision(event) {
     button.disabled = false;
   }
 }
+
+byId("open-reset").addEventListener("click", () => {
+  byId("reset-form").dataset.runId = report.run_id;
+  byId("reset-error").textContent = "";
+  byId("reset").showModal();
+});
+byId("cancel-reset").addEventListener("click", () => byId("reset").close());
+byId("reset").addEventListener("cancel", (event) => {
+  if (byId("confirm-reset").disabled) event.preventDefault();
+});
+byId("reset-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const confirm = byId("confirm-reset");
+  const cancel = byId("cancel-reset");
+  const error = byId("reset-error");
+  confirm.disabled = cancel.disabled = true;
+  error.textContent = "";
+  try {
+    const response = await fetch("/api/reset", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ run_id: event.currentTarget.dataset.runId }),
+      signal: AbortSignal.timeout(10000),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "Demo could not be reset.");
+    window.location.reload();
+  } catch (failure) {
+    error.textContent = failure.message;
+    confirm.disabled = cancel.disabled = false;
+  }
+});
 
 document.querySelector(".tabs").addEventListener("click", (event) => {
   const tab = event.target.closest("[data-view]");

@@ -101,8 +101,10 @@ class Reviews:
         finally:
             db.close()
 
-    def reset(self):
+    def reset(self, expected_run_id=None):
         with self.db(write=True) as db:
+            if expected_run_id is not None and expected_run_id != self.run_id(db):
+                raise ValueError("The demo run changed. Reopen the reset dialog to review the current run.")
             for table in ("investigations", "decisions", "attempts", "batches", "proposals", "snapshots"):
                 db.execute(f"DELETE FROM {table}")
             run_id = str(uuid4())

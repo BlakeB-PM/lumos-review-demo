@@ -1,6 +1,6 @@
 # ChatGPT access review walkthrough
 
-Reset the synthetic run before the audience joins. Open **personal-workspace** as a local project in the desktop app and start a fresh local chat. Follow the [local connection guide](connect-reviewer.md) to register both MCP servers.
+In the local review UI, select **Reset demo** next to **Synthetic demo** and confirm before the audience joins. Open **personal-workspace** as a local project in the desktop app and start a fresh local chat. Follow the [local connection guide](connect-reviewer.md) to register both MCP servers.
 
 > Help me do my access review.
 

@@ -10,7 +10,10 @@
 <body>
   <header class="topbar">
     <nav class="breadcrumb" aria-label="Breadcrumb">Access Reviews <span> / </span> <span id="campaign-title">Loading review…</span> <span> / </span> <span id="breadcrumb-app"></span></nav>
-    <span class="prototype">Synthetic demo</span>
+    <div class="demo-tools">
+      <span class="prototype">Synthetic demo</span>
+      <button type="button" id="open-reset" class="secondary" disabled>Reset demo</button>
+    </div>
   </header>
   <main>
     <header class="workspace-header">
@@ -87,6 +90,17 @@
       <textarea id="reason" rows="3" maxlength="800" required placeholder="Explain why this access should be kept or removed."></textarea>
       <p id="confirm-error" class="error" role="alert"></p>
       <button class="primary" id="confirm-action" type="submit">Record decision</button>
+    </form>
+  </dialog>
+  <dialog id="reset" aria-labelledby="reset-title" aria-describedby="reset-description">
+    <form id="reset-form">
+      <h2 id="reset-title">Reset demo?</h2>
+      <p id="reset-description">This clears the recorded decisions and audit activity for this demo and restores the starting review queue.</p>
+      <p id="reset-error" class="error" role="alert"></p>
+      <div class="dialog-actions">
+        <button type="button" id="cancel-reset" class="secondary" autofocus>Cancel</button>
+        <button type="submit" id="confirm-reset" class="primary">Reset demo</button>
+      </div>
     </form>
   </dialog>
 </body>

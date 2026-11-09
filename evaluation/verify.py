@@ -76,8 +76,8 @@ def browser_report(state, scenario="warehouse"):
                     assert response.headers["Cache-Control"] == "no-store"
                     return json.load(response)
 
-            def record(payload, origin=None):
-                request = Request(url + "api/decisions", data=json.dumps(payload).encode(),
+            def record(payload, origin=None, path="api/decisions"):
+                request = Request(url + path, data=json.dumps(payload).encode(),
                                   headers={"Content-Type": "application/json",
                                            "Origin": origin or url.rstrip("/")})
                 with urlopen(request, timeout=5) as response:
@@ -333,7 +333,7 @@ def verify_default(state, report):
         assert codex("get_review_status", **review)["counts"]["pending"] == 34
 
 
-def verify_chatgpt(state, report):
+def verify_chatgpt(state, report, post):
     with client(state, "--assistant-host", "chatgpt_work", scenario="chatgpt") as (rpc, tool):
         tools = {entry["name"]: entry for entry in rpc("tools/list")["tools"]}
         uri = tools["open_access_review"]["_meta"]["ui"]["resourceUri"]
@@ -423,7 +423,24 @@ def verify_chatgpt(state, report):
         finance = next(item for item in audit["items"] if item["id"] == "AD-FINANCE-ADMIN")
         assert "context_summary" not in finance["receipt"]
         assert all(value not in json.dumps(audit) for value in (transcript["source_id"], "Casey Brooks", "transition call"))
-        subprocess.run([sys.executable, str(SERVER), "reset", "--scenario", "chatgpt", "--state", str(state)], check=True)
+        try:
+            post(run, origin="https://example.com", path="api/reset")
+        except HTTPError as error:
+            assert error.code == 403
+        else:
+            raise AssertionError("A cross-origin reset was accepted")
+        assert len(report()["events"]) == 17
+        restarted = post(run, path="api/reset")
+        assert restarted["run_id"] != run["run_id"]
+        try:
+            post(run, path="api/reset")
+        except HTTPError as error:
+            assert error.code == 409
+        else:
+            raise AssertionError("A stale reset was accepted")
+        clean = report()
+        assert clean["run_id"] == restarted["run_id"] and not clean["events"]
+        assert len(clean["items"]) == 17 and all(item["receipt"] is None for item in clean["items"])
         assert "restarted" in tool("record_review_batch", batch_token=proposal["batch_token"], error=True)
         assert tool("open_access_review")["review"]["recorded"] == 0
 
@@ -440,7 +457,7 @@ if __name__ == "__main__":
         with browser_report(state, scenario="tour") as (report, _):
             verify_default(state, report)
         state = Path(temp) / "chatgpt.sqlite3"
-        with browser_report(state, scenario=None) as (report, _):
-            verify_chatgpt(state, report)
+        with browser_report(state, scenario=None) as (report, post):
+            verify_chatgpt(state, report, post)
     print("PASS: 36-permission tour, stdio discovery, reviewer scope, evidence, confirmation, partial/stale writes, "
           "idempotency, clean runs, simulation, browser round trip, Work/Cowork MCP proposals, and the 17-grant ChatGPT app.")

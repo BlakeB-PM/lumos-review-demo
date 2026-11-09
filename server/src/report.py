@@ -5,6 +5,7 @@ import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 
+from mcp_stdio import obj, string
 from reviews import ROOT
 
 ASSETS = {
@@ -12,6 +13,7 @@ ASSETS = {
     "/report.css": ("report.css", "text/css; charset=utf-8"),
     "/report.js": ("report.js", "text/javascript; charset=utf-8"),
 }
+RESET_SCHEMA = obj(("run_id",), run_id=string())
 
 
 def serve_report(reviews, port, open_browser, decision_schema, validate):
@@ -36,21 +38,29 @@ def serve_report(reviews, port, open_browser, decision_schema, validate):
             self.respond(200, body, content_type)
 
         def do_POST(self):
-            if self.path != "/api/decisions":
+            if self.path not in ("/api/decisions", "/api/reset"):
                 self.send_error(404)
                 return
             if not self.local_host() or self.headers.get("Origin") != f"http://127.0.0.1:{self.server.server_port}":
                 self.send_error(403)
                 return
+            resetting = self.path == "/api/reset"
             try:
                 size = int(self.headers.get("Content-Length", "0"))
                 if self.headers.get_content_type() != "application/json" or not 0 < size <= 65_536:
                     raise ValueError("Expected a bounded JSON submission.")
                 payload = json.loads(self.rfile.read(size))
-                validate(payload, decision_schema)
-                result = reviews.submit_decisions(**payload, client="local_review_ui")
+                validate(payload, RESET_SCHEMA if resetting else decision_schema)
             except ValueError as error:
                 self.respond(400, json.dumps({"error": str(error)}).encode(), "application/json")
+                return
+            try:
+                if resetting:
+                    result = {"run_id": reviews.reset(expected_run_id=payload["run_id"])}
+                else:
+                    result = reviews.submit_decisions(**payload, client="local_review_ui")
+            except ValueError as error:
+                self.respond(409 if resetting else 400, json.dumps({"error": str(error)}).encode(), "application/json")
                 return
             self.respond(200, json.dumps(result).encode(), "application/json")
 
