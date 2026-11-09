@@ -1,15 +1,15 @@
 # The one-minute access review demo
 
-Open the review workspace beside the assistant. A fresh campaign shows **36 permissions across 18 people**. Start a Work chat from a ChatGPT project that has [Dana’s sales handoff](../personal-workspace/context/sales-handoff.md) in **Sources**. Select **Lumos Access Reviews** and use the prompt below. In local Codex, the same file lives in the personal workspace.
+Open the review workspace beside the assistant. A fresh campaign shows **36 permissions across 18 people**. Enable **Lumos Access Reviews** and **Dana Personal Context** in your assistant and use the prompt below. The [connection guide](connect-reviewer.md) covers each host.
 
 > Help me complete my access review. Start with Alex Rivera’s permissions.
 
-The project source simulates the personal agent’s context. The [simulated Knowledge Hub entry](../server/data/knowledge/knowledge-hub/AD-KH-SALES.md) is available separately through Lumos. It treats recent invoice lookups as a signal of ongoing work. Dana’s handoff explains why that signal is misleading for Alex.
+Dana Personal Context searches a [simulated private inbox](../personal-workspace/context/sales-handoff.md). Lumos provides the [simulated Knowledge Hub entry](../server/data/knowledge/knowledge-hub/AD-KH-SALES.md), which treats recent invoice lookups as a signal of ongoing work. Dana’s handoff explains why that signal is misleading for Alex.
 
 | Say or do | What this shows |
 | --- | --- |
 | Show the **36** pending permissions, then search for **Alex Rivera** and point to **Accept** on Accounts Receivable. | Lumos sees a recent invoice lookup. That activity supports keeping the permission until you learn why the lookup happened. |
-| Start the review from Dana’s project. | The assistant finds the Sales Ops handoff in the project’s Sources, summarizes the queue, and checks the Knowledge Hub entry and policy through MCP. It proposes **Reject Accounts Receivable**, reversing Lumos, and agrees with Lumos on **Reject Finance Admin**. |
+| Start the review and show the personal-context lookup in the assistant’s tool activity. | The assistant searches for Alex and invoice follow-up. It uses the handoff to reinterpret the invoice lookup and checks the policy through Lumos. It proposes **Reject Accounts Receivable**, reversing Lumos, and agrees with Lumos on **Reject Finance Admin**. |
 | Read the proposed actions and say **“Confirm those two decisions.”** | The reviewer makes the call. The assistant records the decisions and the audit notes. Dana’s message stays in the personal workspace. |
 | Switch to **Reviewed** and open the Accounts Receivable audit note. **“Same employee, same title. The assistant knew the work had changed.”** | Show **Accept** in Suggestion and **Reject** in Review Action, with the audit note and cited policy. **34** permissions are still pending. |
 | Close with **“Draft an IT request to update the Lumos Knowledge Hub so the next review gets this right.”** | Show the assistant’s unsent IT request. The individual decision is already recorded. This separate request would carry the verified handoff into future reviews. |

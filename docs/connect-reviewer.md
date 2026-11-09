@@ -23,9 +23,25 @@ Hosted Work uses an installed custom MCP plugin. The Codex stdio registration do
 
 The tunnel needs to stay running during the demo. The tool caller is a fixed synthetic reviewer. Use a separate checkout or state file for each independent rehearsal. The browser report must use the same state path as the connector.
 
+### Give Work a separate personal context connector
+
+Create a second workspace-scoped tunnel and use a distinct local health port. Configure its stdio command as `python /absolute/path/to/server/src/personal_context.py`. Install it in ChatGPT as **Dana Personal Context**, then select both plugins in a fresh Work chat. This path retrieves the handoff through a read-only MCP call and does not require a project source. [Secure MCP Tunnel guide](https://developers.openai.com/api/docs/guides/secure-mcp-tunnels)
+
+### Run both connectors locally in Codex
+
+Register the review connector using the README, then add the separate personal inbox connector. In PowerShell from the repo root:
+
+```powershell
+$python = (Get-Command python -CommandType Application | Select-Object -First 1).Source
+$contextServer = (Resolve-Path ./server/src/personal_context.py).Path
+codex mcp add dana_personal_context -- $python $contextServer
+```
+
+Open a fresh Codex chat with both MCP servers enabled. Use the demo prompt and look for `search_personal_context` in the tool activity.
+
 ## Claude Cowork · local connector plugin
 
-Generate a local plugin with the MCP connector and reviewer skill. The archive uses this checkout's absolute paths so Claude and the product browser share the same review state. Generate it on the machine where Cowork runs.
+Generate a local plugin with both MCP connections and the reviewer skill. The archive uses this checkout's absolute paths so Claude and the product browser share the same review state. Generate it on the machine where Cowork runs.
 
 ```sh
 python scripts/package-cowork.py lumos-cowork.zip

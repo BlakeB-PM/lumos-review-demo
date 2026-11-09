@@ -63,7 +63,8 @@ def serve(reviews, assistant_host=None):
     instructions = (
         "Synthetic access reviews. When the user asks to start by saying "
         "'Help me complete my access review', call start_demo before any review reads. "
-        "For Active Directory, open sales-handoff.md from the personal agent's project sources. "
+        "For Active Directory, first call search_personal_context on the separate Dana Personal Context "
+        "connector for Alex Rivera and invoice follow-up if that connector is available. "
         "In a local demo project, explicitly open context/sales-handoff.md under personal-workspace "
         "before deciding that context is missing. Compare the original suggestion with the current "
         "permission policy and the handoff. Summarize routine grants, review exceptions first, and honor "

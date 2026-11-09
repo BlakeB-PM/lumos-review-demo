@@ -10,13 +10,17 @@ from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 SERVER = Path(__file__).resolve().parents[1] / "server/src/main.py"
+PERSONAL_SERVER = SERVER.with_name("personal_context.py")
 
 
 @contextmanager
 def client(state, *options, scenario="warehouse"):
+    command = [sys.executable, str(PERSONAL_SERVER)] if state is None else [
+        sys.executable, str(SERVER), "--state", str(state), *options,
+        *(["--scenario", scenario] if scenario else []),
+    ]
     with subprocess.Popen(
-        [sys.executable, str(SERVER), "--state", str(state), *options,
-         *(["--scenario", scenario] if scenario else [])],
+        command,
         stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, encoding="utf-8",
     ) as process:
         request_id = 0
@@ -297,6 +301,17 @@ def verify_default(state, report):
         assert hub_entry["source_system"] == "Simulated Lumos Knowledge Hub"
         assert "Sales Ops" not in hub_entry["excerpt"]
         assert not codex("search_review_evidence", **review, query="Casey Brooks")["records"]
+        assert not codex("get_evidence", evidence_ids=["DANA-SALES-HANDOFF"])["records"]
+
+        with client(None) as (rpc, personal):
+            tools = rpc("tools/list")["tools"]
+            assert [tool["name"] for tool in tools] == ["search_personal_context"]
+            assert tools[0]["annotations"]["readOnlyHint"]
+            result = personal("search_personal_context", person="Alex Rivera", topic="invoice follow-up")
+            assert result["results"][0]["source_id"] == "DANA-SALES-HANDOFF"
+            assert "Sales Ops handles" in result["results"][0]["excerpt"]
+            assert not personal("search_personal_context", person="Alex Rivera", topic="parking")["results"]
+            assert not personal("search_personal_context", person="Jordan Lee", topic="invoice")["results"]
 
         with client(state, "--assistant-host", "chatgpt_work", scenario=None) as (_, work):
             assert work("list_my_reviews")["records"][0]["counts"]["pending"] == 36

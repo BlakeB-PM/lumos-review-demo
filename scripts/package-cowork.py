@@ -23,7 +23,11 @@ def main():
             "lumos-access-reviews": {
                 "command": Path(sys.executable).as_posix(),
                 "args": [(ROOT / "server/src/main.py").as_posix(), "--assistant-host", "claude_cowork"],
-            }
+            },
+            "dana-personal-context": {
+                "command": Path(sys.executable).as_posix(),
+                "args": [(ROOT / "server/src/personal_context.py").as_posix()],
+            },
         }
     }
     with ZipFile(args.output, "x", ZIP_DEFLATED) as plugin:
