@@ -6,18 +6,26 @@ All scenarios use the same MCP tools and inline panel. Names, permissions and sc
 
 ## Run locally
 
+Clone the repository and enter it:
+
+```sh
+git clone https://github.com/BlakeB-PM/lumos-review-demo.git
+cd lumos-review-demo
+```
+
+**Browser-only:** Run `python server/src/main.py report --open` with Python 3.10+ (use `python3` where applicable). The report runs on localhost and supports synthetic review decisions and audit receipts.
+
+**Agent and inline panel:** The clone includes the local Lumos MCP server, the optional synthetic personal-context connector, and the panel. Register the connectors using the guide below. You need a compatible desktop host and the Codex CLI for the documented setup. The inline panel requires MCP Apps support. The local prototype uses synthetic fixtures and needs no Lumos credentials.
+
 Use Python 3.10+ and follow [connection setup](docs/connect-reviewer.md). Start with any natural request, for example:
 
 > Investigate my pending access review and prepare supported recommendations.
 
-The inline panel separates permissions ready for batch review from those needing individual investigation. The page checkbox selects or clears only the displayed page. Open evidence from a permission row or a shared batch, ask the agent to investigate, or choose **Decide manually** to enter actions and audit reasons alongside the selected rows. Use **More actions → Defer selected** to leave grants pending with a reason.
+The inline panel separates permissions ready for batch review from those needing individual investigation. The page checkbox selects or clears only the displayed page. Open evidence from a permission row or a shared batch, ask the agent to investigate, or choose **Decide manually** to enter actions and audit reasons alongside the selected rows. Unresolved grants can stay pending.
 
 Before recording, **Review audit entries** shows exactly what will be saved for each permission. After recording, verify the saved reasons and receipt IDs before continuing. Hosts that render MCP Apps show the inline panel. The same tools support text-only hosts.
 
-```sh
-python server/src/main.py report --open
-python evaluation/verify.py
-```
+Run `python evaluation/verify.py` to check the local workflow with isolated state.
 
 Reset is a separate operator action, never part of opening a review:
 

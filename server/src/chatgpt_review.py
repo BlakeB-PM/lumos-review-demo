@@ -4,7 +4,7 @@ import json
 from mcp_stdio import array, integer, obj, serve_stdio, string
 from reviews import REMEDIATION, ROOT
 
-RESOURCE_URI = "ui://lumos/access-review-v11.html"
+RESOURCE_URI = "ui://lumos/access-review-v12.html"
 MIME_TYPE = "text/html;profile=mcp-app"
 ID = string()
 DECISION = obj(("item_id", "snapshot_version", "outcome", "reason", "evidence_refs"),

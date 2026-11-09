@@ -1,6 +1,6 @@
 # Shared tool contract
 
-All fixture scenarios and host profiles expose the same tools. The host flag affects receipt attribution only. Structured results advertise `ui://lumos/access-review-v11.html` for overview, group, proposal and progress views; text-only hosts receive the same facts.
+All fixture scenarios and host profiles expose the same tools. The host flag affects receipt attribution only. Structured results advertise `ui://lumos/access-review-v12.html` for overview, group, proposal and progress views; text-only hosts receive the same facts.
 
 | Tool | Contract |
 | --- | --- |

@@ -1,6 +1,6 @@
 # Connect the local review
 
-Use Python 3.10+, the Codex CLI, and a **local chat in the ChatGPT desktop app**. Both connectors run over local stdio.
+Use Python 3.10+, the Codex CLI, and a **local chat in the signed-in Codex desktop app**. Both connectors run over local stdio.
 
 ## Register the two connectors
 
@@ -13,6 +13,15 @@ $contextServer = (Resolve-Path ./server/src/personal_context.py).Path
 codex mcp add lumos_review_demo -- $demoPython $demoServer --scenario chatgpt --assistant-host chatgpt_work
 codex mcp add dana_personal_context -- $demoPython $contextServer --transcript
 ~~~
+
+From the repository root on macOS or Linux, use:
+
+~~~sh
+codex mcp add lumos_review_demo -- python3 "$PWD/server/src/main.py" --scenario chatgpt --assistant-host chatgpt_work
+codex mcp add dana_personal_context -- python3 "$PWD/server/src/personal_context.py" --transcript
+~~~
+
+The second connector supplies optional synthetic work context for the agent walkthrough.
 
 The commands update existing registrations under the same names. The host flag labels receipts; all hosts use the same tools and UI resource. The connectors still run locally.
 

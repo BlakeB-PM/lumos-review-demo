@@ -63,7 +63,6 @@
   .row-editor { margin-top: 8px; }
   .row-editor label { margin-top: 4px; font-size: 12px; }
   .row-editor textarea { min-height: 58px; }
-  .group-actions details { margin-top: 0; }
   .roster--short { max-height: none; overflow: visible; }
   .roster--short th { position: static; }
   main[data-layout="group"] { padding: clamp(12px, 2.4vw, 18px); }
@@ -538,37 +537,7 @@
       return ask(`Investigate these exact grants in review ${data.review.review_id}: ${ids().join(', ')}. Read Lumos briefs and relevant authorized personal context. Present a short account of what changed, prepare one proposal for supported decisions, and leave unresolved grants pending. Do not record or share private context without authorization.`);
     },true);
     const manualButton=button('Decide manually',()=>{manual=!manual;update();});
-    const defer=button('Defer selected',()=>{
-      const itemIds=ids();
-      const content=node('div');
-      content.append(node('p',`${itemIds.length} selected ${itemIds.length===1?'permission will':'permissions will'} move to Deferred and remain pending.`));
-      const reason=node('textarea');
-      reason.maxLength=400;
-      reason.rows=2;
-      const dialogStatus=node('p','','muted');
-      dialogStatus.setAttribute('role','status');
-      const confirm=button('Move to Deferred',async()=>{
-        if(!reason.value.trim()) {
-          dialogStatus.textContent='Enter a reason for deferring.';
-          reason.focus();
-          return;
-        }
-        try {
-          await tool('defer_review_items',{review_id:data.review.review_id,run_id:data.review.run_id,
-            item_ids:itemIds,reason:reason.value.trim()});
-          dialog.close();
-          focusHeading();
-        } catch(error) {
-          dialogStatus.textContent=error.message;
-        }
-      },true);
-      content.append(field('Why are you deferring?',reason),dialogStatus,actions(confirm));
-      const dialog=openDialog('Defer selected permissions',content,defer);
-      reason.focus();
-    });
-    const more=node('details');
-    more.append(node('summary','More actions'),defer);
-    const bar=actions(primary,manualButton,more);
+    const bar=actions(primary,manualButton);
     bar.classList.add('group-actions');
     view.append(bar);
 
@@ -586,7 +555,6 @@
         ? `Review ${n} audit ${n===1?'entry':'entries'}`
         : `Investigate ${n} ${n===1?'permission':'permissions'}`;
       primary.disabled=!n;
-      defer.disabled=!n;
       manualButton.disabled=!n && !manual;
       manualButton.textContent=manual?'Exit manual editing':'Decide manually';
     }
