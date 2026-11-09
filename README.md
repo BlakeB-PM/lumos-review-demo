@@ -35,6 +35,10 @@ python server/src/main.py reset --scenario chatgpt
 
 For rendered UI checks, install Playwright in your test environment and run `node evaluation/ui.cjs` (set `CHROME` to your browser executable on other platforms). This uses isolated state and a simulated MCP Apps host; it does not replace testing inside each supported host.
 
-The browser workspace and MCP share proposals, receipt state, evidence freshness checks, and deferrals. Use the same `--scenario` and `--state` for both. [Tool contracts](docs/tool-contracts.md) · [Example walkthrough](docs/demo-script.md) · [Production boundary](docs/production-boundary.md)
+The browser workspace and MCP share proposals, receipt state, evidence freshness checks, and deferrals. Use the same `--scenario` and `--state` for both.
+
+**Architecture and workflows:** [Six detailed Mermaid diagrams](docs/diagrams.md) cover the system boundaries, reviewer experience, MCP interaction sequence, confirmation and retry lifecycle, evidence provenance, and production integration gaps. See also the [Miro implementation diagram](https://miro.com/app/board/uXjVESqFoRg=/?moveToWidget=3458764689933058696) for the canvas view.
+
+[Tool contracts](docs/tool-contracts.md) · [Example walkthrough](docs/demo-script.md) · [Production boundary](docs/production-boundary.md)
 
 This is a synthetic local adapter: no production Lumos authentication or live remediation is implemented. The generalized workflow is executable; multi-tenant identity, remote authorization, and live product adapters remain production integration work.
