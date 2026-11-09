@@ -95,12 +95,15 @@ sequenceDiagram
   P->>H: get_review_group / get_review_context
   H->>L: tools/call
   L->>W: Read exact grants, recommendations, policy and evidence
-  W-->>P: Evidence via MCP bridge
+  W-->>L: Scoped evidence and source dates
+  L-->>H: structuredContent
+  H-->>P: Render selected evidence
   R->>P: Investigate selected permission
   P->>A: ui/message with selected scope
   A->>H: get_review_context / get_evidence
   H->>L: tools/call
-  L-->>A: Lumos evidence through host
+  L-->>H: Evidence and policy
+  H-->>A: Lumos evidence
   opt Reviewer authorized relevant external sources
     A->>C: Consult private context
     C-->>A: Relevant work facts, possibly conflicting
