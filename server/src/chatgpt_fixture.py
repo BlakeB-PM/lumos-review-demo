@@ -20,7 +20,7 @@ def load_chatgpt_fixture(reviews):
             "id": item_id, "review_id": reviews.campaign_id, "person": person,
             "entitlement": entitlement, "snapshot_version": 1, "employment_status": "Terminated",
             "insight_categories": ["Terminated"], "key_facts": [f"HR verified termination effective {date}."],
-            "allowed_actions": ["revoke"], "evidence_refs": [OFFBOARDING_EVIDENCE],
+            "batch_eligible": True, "allowed_actions": ["revoke"], "evidence_refs": [OFFBOARDING_EVIDENCE],
         }
         recommendations[item_id] = {
             "item_id": item_id, "outcome": "reject", "basis": reason, "snapshot_version": 1,

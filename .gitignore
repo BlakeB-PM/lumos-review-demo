@@ -6,3 +6,4 @@ lumos-cowork.zip
 .env.*
 *.pem
 *.key
+work/

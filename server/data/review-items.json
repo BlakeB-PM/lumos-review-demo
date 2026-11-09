@@ -9,10 +9,22 @@
     "privileged": true,
     "review_id": "AD-REVIEW",
     "snapshot_version": 1,
-    "insight_categories": ["Overprivileged"],
-    "key_facts": ["Alex works in Sales. Finance Admin lets someone manage finance settings and is reserved for Finance administrators."],
-    "evidence_refs": ["AD-ADMIN-RECORD"],
-    "allowed_actions": ["retain", "revoke"]
+    "insight_categories": [
+      "Overprivileged"
+    ],
+    "key_facts": [
+      "Alex works in Sales. Finance Admin lets someone manage finance settings and is reserved for Finance administrators."
+    ],
+    "evidence_refs": [
+      "AD-ADMIN-RECORD"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ],
+    "open_questions": [
+      "Is there a current Finance administrator assignment or a valid scoped exception?"
+    ]
   },
   {
     "id": "AD-ACCOUNTS-RECEIVABLE",
@@ -23,10 +35,24 @@
     "entitlement": "Accounts Receivable",
     "review_id": "AD-REVIEW",
     "snapshot_version": 1,
-    "insight_categories": ["Role Aligned"],
-    "key_facts": ["The directory lists Alex in Sales, and the activity log shows a recent invoice lookup."],
-    "evidence_refs": ["AD-INVOICE-RECORD", "AD-KH-SALES", "AD-INVOICE-POLICY"],
-    "allowed_actions": ["retain", "revoke"]
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The directory lists Alex in Sales, and the activity log shows a recent invoice lookup."
+    ],
+    "evidence_refs": [
+      "AD-INVOICE-RECORD",
+      "AD-KH-SALES",
+      "AD-INVOICE-POLICY"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ],
+    "open_questions": [
+      "Does this person currently own invoice follow-up? Recent invoice activity alone does not establish ongoing responsibility."
+    ]
   },
   {
     "id": "AD-DIRECTORY-01",
@@ -997,7 +1023,19 @@
     "allowed_actions": [
       "retain",
       "revoke"
-    ]
+    ],
+    "snapshot_updates": {
+      "2": {
+        "key_facts": [
+          "Owner closed the sandbox assignment. Prior usage telemetry is historical."
+        ],
+        "evidence_refs": [
+          "POL-SANDBOX",
+          "OBS-AR-107",
+          "OBS-AR-107-V2"
+        ]
+      }
+    }
   },
   {
     "id": "AR-108",

@@ -1,20 +1,13 @@
-# ChatGPT access review walkthrough
+# Example walkthrough
 
-In the local review UI, select **Reset demo** next to **Synthetic demo** and confirm before the audience joins. Open **personal-workspace** as a local project in the desktop app and start a fresh local chat. Follow the [local connection guide](connect-reviewer.md) to register both MCP servers.
+The fixture illustrates the generalized experience; the workflow must also work when names, grants, sources or conclusions change.
 
-> Help me do my access review.
+1. Ask to see the review, or ask the agent to investigate and prepare recommendations. Opening resumes saved progress.
+2. Open a batch or the separate individual-review group. The page checkbox selects or clears only the current page, including rows hidden by search. A partial checkbox means only some grants are selected.
+3. Open **View evidence** from a permission row or **View shared evidence** beside a batch recommendation. The detail panel shows the open question and dated sources, with excerpts available on expansion.
+4. Ask the agent to investigate selected grants, or choose **Decide manually** to enter actions and reasons without leaving the roster. Compatible batches can use one shared action and reason with per-row overrides. To set grants aside, choose **More actions → Defer selected**, enter a reason, and confirm the move to Deferred.
+5. Open **Review audit entries** to check the exact decisions, reasons, and any authorized work-context summary. Edit or exclude entries as needed and review the updated preview.
+6. Record the exact proposal. Verify the saved reasons and receipt IDs, then continue to the remaining queue. Access removal is simulated.
+7. Revisit deferred work when clarification becomes available. Changed evidence or an expired proposal requires a fresh preview.
 
-| Reviewer action | What the audience sees |
-| --- | --- |
-| Open the assigned review and pause at the overview. | The inline panel shows **17 left to review** and **0 of 17 recorded**. It recommends starting with **15 offboarding grants** and shows **two grants for Alex Rivera** as the other group. |
-| Select **Review 15 offboarding grants**. Expand the roster or inspect the Lumos evidence. Select **Preview 15 rejects**. | Albus says **Reject** based on verified HR terminations and offboarding policy. ChatGPT agrees. The preview contains the exact people and permissions. |
-| Select **Record 15 decisions** and approve the write if ChatGPT prompts. Open **Reviewed** in the local browser report. | Progress moves to **15 of 17 recorded**, with Alex’s two grants remaining. The browser shows those same 15 grants as **Reject**. |
-| Select **Review individual grants**, then **Check my work context**. | ChatGPT checks Lumos policy, activity and Knowledge Hub guidance, then retrieves the private call transcript from Dana Personal Context. Albus saw a recent invoice lookup and suggested **Accept**. The call explains that Alex looked up the invoice while handing work to Sales Ops. |
-| Compare the two proposed decisions and read the work context summary before recording. | For **Accounts Receivable**, the proposal shows the Sales Ops handoff and why the activity does not demonstrate a current business need. For **Finance Admin**, ChatGPT agrees with **Reject** because Alex lacks the required assignment. |
-| In the browser, open **Reviewed**, then open **Accounts Receivable** for Alex. | The audit shows Albus’s Accept, the recorded Reject, the reviewer-approved work context summary, and the Lumos evidence. The agent may suggest a Knowledge Hub update in conversation if useful. |
-
-To exercise an exception, deselect one offboarding grant before preview. Confirm that it stays in the queue and that the recorded count reflects the selection. To exercise missing context, disable Dana Personal Context and open the review in a chat without the transcript. Accounts Receivable should stay pending. Finance Admin can still be decided from Lumos evidence.
-
-If the local client presents only tool results, ask for the offboarding group, preview and confirm the exact batch in chat, then ask it to check Alex against your work context. The same tool calls update the same review.
-
-The transcript, speakers and private source ID stay out of Lumos calls and the audit. All people, evidence and decisions are synthetic. No real access changes.
+For the example private context, `personal-workspace/context` and the optional synthetic connector supply evidence independently of Lumos. No specific file is required by the reviewer workflow. Try missing or conflicting context instead of assuming the expected reversal.

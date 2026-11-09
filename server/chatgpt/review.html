@@ -12,8 +12,8 @@
     --muted: light-dark(#54576a, #b8b9c7);
     --line: light-dark(#e0e1e9, #474756);
     --wash: light-dark(#f5f5fa, #2c2c37);
-    --accent: light-dark(#4e39a4, #cbbdff);
-    --accent-bg: light-dark(#f0ebff, #372d52);
+    --accent: light-dark(#b43820, #ff9c82);
+    --accent-bg: light-dark(#fff2ed, #3c2521);
     --danger: light-dark(#992d42, #ffb2bf);
     font: 14px/1.45 system-ui, sans-serif;
     color: var(--ink);
@@ -26,7 +26,7 @@
   h1 { font-size: clamp(17px, 4vw, 22px); line-height: 1.18; }
   h2 { font-size: 17px; }
   h3 { font-size: 15px; }
-  small { color: var(--muted); }
+  small { display: block; color: var(--muted); margin-top: 5px; }
   .muted { color: var(--muted); }
   .brand { color: var(--accent); font-weight: 700; letter-spacing: .02em; font-size: 12px; margin-bottom: 4px; }
   header, .actions, .selection { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
@@ -36,23 +36,85 @@
   #status:empty { display: none; }
   #status { padding: 9px 11px; margin-bottom: 12px; border-radius: 8px; background: var(--wash); }
   #status.error { color: var(--danger); }
-  .comparison { display: grid; gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .comparison > div { padding: 11px; background: var(--wash); border-radius: 10px; min-width: 0; }
-  .comparison p { margin-top: 4px; overflow-wrap: anywhere; }
-  .plan { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 7px; }
-  .plan li { display: flex; align-items: center; gap: 10px; padding: 9px 11px; border-radius: 10px; background: var(--wash); }
-  .plan li.next { background: var(--accent-bg); }
-  .plan li > strong { font-size: 22px; line-height: 1; min-width: 1.6em; text-align: center; font-variant-numeric: tabular-nums; }
-  .plan li small { display: block; }
-  .comparison .agent { background: var(--accent-bg); }
-  .comparison .label { color: var(--muted); font-size: 12px; }
-  .comparison strong { display: block; }
-  .comparison .reject { color: var(--danger); }
   .actions, .comparison, details, .evidence, article + article { margin-top: 10px; }
   article { padding: 10px 0; }
   article + article { border-top: 1px solid var(--line); }
   button { min-height: 40px; border: 1px solid var(--line); border-radius: 8px; padding: 6px 11px; background: var(--paper); color: var(--ink); font: inherit; font-weight: 650; cursor: pointer; }
-  button.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  button.primary { background: var(--accent); color: light-dark(white, #24110d); border-color: var(--accent); }
+  button:hover { filter: brightness(.94); }
+  .hero, .decision-card { margin: 12px 0; border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+  .hero { background: var(--accent-bg); }
+  .decision-card { border-inline-start: 4px solid var(--accent); }
+  .eyebrow { color: var(--accent); text-transform: uppercase; font-size: 11px; font-weight: 750; letter-spacing: .09em; }
+  .badge { display: inline-block; border-radius: 999px; padding: 3px 9px; margin: 5px 0; font-size: 12px; font-weight: 700; }
+  .retain { background: light-dark(#def6e9,#153a2c); color: light-dark(#126044,#a2ebc7); }
+  .revoke { background: light-dark(#ffebe6,#4a2624); color: light-dark(#992f21,#ffb8a8); }
+  .attention { background: light-dark(#fff0ce,#453318); color: light-dark(#725009,#ffda8e); }
+  .roster { max-height: 260px; overflow: auto; margin-top: 8px; }
+  .roster:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .roster table { table-layout: fixed; }
+  .roster th, .roster td { vertical-align: top; padding: 9px 8px; }
+  .roster th { position: sticky; top: 0; background: var(--wash); color: var(--ink); }
+  .roster th:first-child.checkbox { width: 38px; }
+  button.inline-link { display: inline-block; padding: 2px 0; min-height: 28px; border: 0; background: transparent; color: var(--accent); text-decoration: underline; }
+  .permission-dialog { position: absolute; bottom: auto; margin: 0 auto; width: min(540px, calc(100% - 24px)); max-height: min(75vh, 480px); padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); color: var(--ink); }
+  .permission-dialog::backdrop { background: #0008; }
+  .permission-dialog h2 { margin-bottom: 8px; }
+  .row-editor { margin-top: 8px; }
+  .row-editor label { margin-top: 4px; font-size: 12px; }
+  .row-editor textarea { min-height: 58px; }
+  .group-actions details { margin-top: 0; }
+  .roster--short { max-height: none; overflow: visible; }
+  .roster--short th { position: static; }
+  main[data-layout="group"] { padding: clamp(12px, 2.4vw, 18px); }
+  main[data-layout="group"] progress { height: 4px; margin: 9px 0 11px; }
+  .group-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-bottom: 8px; }
+  .group-toolbar h2 { margin-right: auto; }
+  .group-toolbar button { min-height: 34px; padding: 4px 8px; font-size: 12px; }
+  .group-toolbar input { flex: 1 1 155px; max-width: 200px; min-width: 0; min-height: 34px; padding: 5px 8px; margin: 0; }
+  .group-toolbar .selection-count { font-size: 12px; color: var(--muted); }
+  .group-toolbar small { flex-basis: 100%; margin-top: 0; }
+  .visually-hidden { position: absolute; clip-path: inset(50%); width: 1px; height: 1px; overflow: hidden; }
+
+  .roster td strong { display: block; }
+  .roster td small { margin-top: 2px; }
+  .roster td .badge { margin-bottom: 0; }
+  .recommendation { display: grid; grid-template-columns: minmax(145px, .8fr) minmax(0, 2fr); gap: 16px; padding: 14px; margin: 12px 0; background: var(--wash); border: 1px solid var(--line); border-radius: 12px; }
+  .recommendation h3, .decision-action { font-size: 18px; line-height: 1.25; font-weight: 750; }
+  .recommendation .eyebrow { margin-bottom: 5px; }
+  .decision-action { display: inline-block; border-radius: 7px; padding: 5px 8px; }
+  .roster.has-recommendations th:nth-child(2) { width: 20%; }
+  .roster.has-recommendations th:nth-child(3) { width: 21%; }
+  .roster.has-recommendations th:nth-child(4) { width: 17%; }
+  .roster td .insight { color: var(--ink); font-size: 13px; }
+  .roster .row-action { font-weight: 750; display: inline-block; padding: 3px 6px; border-radius: 6px; }
+  .review-queue { display: grid; gap: 10px; margin: 12px 0; }
+  .queue-lane { padding: 14px; border: 1px solid var(--line); border-inline-start: 4px solid var(--accent); border-radius: 12px; }
+  .queue-lane--individual { border-inline-start-color: light-dark(#926305,#edbd64); }
+  .queue-lane--deferred { border-inline-start-color: var(--muted); }
+  .queue-lane .badge { margin: 0 0 5px; }
+  .queue-lane > p { margin-top: 4px; }
+  .audit-text { margin: 10px 0; padding: 12px; background: var(--wash); border: 1px solid var(--line); border-radius: 8px; overflow-wrap: anywhere; }
+  .audit-text h4 { margin: 0 0 5px; }
+  .change-note { border-inline-start: 3px solid var(--accent); padding: 8px 10px; background: var(--wash); margin: 8px 0; }
+  .mobile-label { display: none; }
+  @media (max-width: 540px) {
+    .recommendation { grid-template-columns: 1fr; gap: 8px; }
+    .roster.has-recommendations thead { display: block; }
+    .roster.has-recommendations thead th:not(:first-child) { position: absolute; clip-path: inset(50%); width: 1px; height: 1px; overflow: hidden; }
+    .roster.has-recommendations thead tr { padding: 0 5px; }
+    .roster.has-recommendations table, .roster.has-recommendations tbody { display: block; }
+    .roster.has-recommendations tr { display: grid; grid-template-columns: 30px minmax(0,1fr) minmax(0,1fr); padding: 5px; border-bottom: 1px solid var(--line); }
+    .roster.has-recommendations td { border: 0; padding: 5px; }
+    .roster.has-recommendations td:nth-child(4), .roster.has-recommendations td:nth-child(5) { grid-column: 2 / -1; }
+    .mobile-label { display: block; color: var(--muted); font-size: 11px; font-weight: 700; }
+  }
+
+  .queue { max-height: 300px; overflow: auto; }
+  .summary-line { margin: 6px 0; }
+  h2 { font-size: 21px; letter-spacing: -.025em; }
+  .toolbar { border-top: 1px solid var(--line); margin-top: 16px; padding-top: 5px; }
+
   button:disabled { cursor: default; opacity: .55; }
   :is(button, input, summary):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   table { width: 100%; border-collapse: collapse; table-layout: fixed; text-align: left; }
@@ -63,6 +125,9 @@
   summary { cursor: pointer; font-weight: 650; padding: 4px 0; }
   .evidence { background: var(--wash); border-radius: 8px; padding: 10px; }
   .evidence p { white-space: pre-wrap; overflow-wrap: anywhere; }
+  label { display: block; margin-top: 12px; }
+  textarea, select, input[type=text] { display: block; width: 100%; padding: 10px; margin-top: 5px; background: var(--paper); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; font: inherit; }
+  input[type=checkbox] { width: 18px; height: 18px; vertical-align: middle; }
   @media (max-width: 360px) {
     .comparison { grid-template-columns: 1fr; }
     button { min-height: 44px; }
@@ -81,319 +146,614 @@
 </main>
 <script>
 (() => {
-  const title = document.querySelector("#title");
-  const progressLabel = document.querySelector("#progress-label");
-  const progress = document.querySelector("#progress");
-  const status = document.querySelector("#status");
-  const view = document.querySelector("#view");
-  const pending = new Map();
-  let sequence = 0;
-  let data;
-  let busy = false;
-  let selected = new Set();
-
-  function send(method, params) {
-    window.parent.postMessage({ jsonrpc: "2.0", method, params }, "*");
-  }
-
+  const title = document.querySelector('#title'), view = document.querySelector('#view');
+  const status = document.querySelector('#status'), progress = document.querySelector('#progress');
+  const progressLabel = document.querySelector('#progress-label');
+  const pending = new Map(), selections = new Map();
+  let sequence = 0, data, busy = false, drafts = [], retryProposal = null;
+  const staged = new Map();
+  const label = v => ({retain:'Keep access', revoke:'Remove access', accept:'Keep access', reject:'Remove access', review:'Investigate'})[v] || v;
+  const node = (tag, text='', cls='') => { const n=document.createElement(tag); n.textContent=text; n.className=cls; return n; };
+  function tell(text, error=false) { status.textContent=text; status.classList.toggle('error', error); }
   function request(method, params) {
-    const id = ++sequence;
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        pending.delete(id);
-        reject(new Error("ChatGPT did not return a result. Refresh the review to check its status."));
-      }, 180000);
-      pending.set(id, { resolve, reject, timeout });
-      window.parent.postMessage({ jsonrpc: "2.0", id, method, params }, "*");
+    const id=++sequence;
+    return new Promise((resolve,reject) => {
+      const timer=setTimeout(() => { pending.delete(id); reject(new Error('No response yet. Retry a recording with the same proposal, or refresh to check receipts.')); }, 30000);
+      pending.set(id,{resolve,reject,timer});
+      window.parent.postMessage({jsonrpc:'2.0',id,method,params}, '*');
     });
   }
-
-  function tell(message, isError = false) {
-    status.textContent = message;
-    status.classList.toggle("error", isError);
-  }
-
-  function node(tag, content = "", className = "") {
-    const result = document.createElement(tag);
-    if (content) result.textContent = content;
-    if (className) result.className = className;
-    return result;
-  }
-
-  function button(label, action, primary = false) {
-    const control = node("button", label, primary ? "primary" : "");
-    control.type = "button";
-    control.addEventListener("click", () => run(action));
-    return control;
-  }
-
-  function actions(...controls) {
-    const row = node("div", "", "actions");
-    row.append(...controls);
-    return row;
-  }
-
-  async function run(action) {
-    if (busy) return;
-    busy = true;
-    view.inert = true;
-    view.setAttribute("aria-busy", "true");
-    tell("");
-    try {
-      await action();
-    } catch (error) {
-      tell(error.message || "ChatGPT could not complete that action. Try again.", true);
-    } finally {
-      busy = false;
-      view.inert = false;
-      view.setAttribute("aria-busy", "false");
-    }
-  }
-
-  function acceptResult(next) {
-    if (!next?.review || !next.view) return;
-    if (next.view === "offboarding" &&
-        (data?.view !== next.view || data.review.run_id !== next.review.run_id ||
-         data.items.map(item => item.id).join() !== next.items.map(item => item.id).join())) {
-      const previous = data?.view === "proposal" && data.group === "offboarding" &&
-        data.review.run_id === next.review.run_id ? new Set(data.decisions.map(item => item.item_id)) : null;
-      selected = new Set(next.items.filter(item => !previous || previous.has(item.id)).map(item => item.id));
-    }
-    data = next;
-    render();
-    if (next.results) {
-      const recorded = next.results.filter(item => item.status === "recorded").length;
-      const skipped = next.results.length - recorded;
-      tell(skipped ? `${recorded} recorded · ${skipped} need a fresh review` :
-        `${recorded} recorded · ${next.review.pending} remaining`, skipped > 0);
-    }
-  }
-
-  window.addEventListener("message", (event) => {
-    if (event.source !== window.parent || event.data?.jsonrpc !== "2.0") return;
-    const message = event.data;
-    if (message.method === "ui/notifications/tool-result") {
-      if (message.params?.isError) tell(message.params.content?.[0]?.text || "The review tool failed.", true);
-      else acceptResult(message.params?.structuredContent);
-    } else if (message.method === "ui/notifications/tool-cancelled") {
-      tell(message.params?.reason || "The action was cancelled.");
-    } else if (pending.has(message.id)) {
-      const { resolve, reject, timeout } = pending.get(message.id);
-      pending.delete(message.id);
-      clearTimeout(timeout);
-      if (message.error) reject(new Error(message.error.message));
-      else resolve(message.result);
+  const send=(method,params) => window.parent.postMessage({jsonrpc:'2.0',method,params}, '*');
+  window.addEventListener('message', event => {
+    if(event.source!==window.parent || event.data?.jsonrpc!=='2.0') return;
+    const m=event.data;
+    if(m.method==='ui/notifications/tool-result') {
+      if(m.params?.isError) tell(m.params.content?.[0]?.text || 'The action failed.',true);
+      else accept(m.params?.structuredContent);
+    } else if(m.method==='ui/notifications/tool-cancelled') tell('Action cancelled. Refresh to check the current state.');
+    else if(pending.has(m.id)) {
+      const p=pending.get(m.id); pending.delete(m.id); clearTimeout(p.timer);
+      m.error ? p.reject(new Error(m.error.message)) : p.resolve(m.result);
     }
   });
-
-  const ready = request("ui/initialize", {
-    appInfo: { name: "lumos-access-review", version: "1.0.0" },
-    appCapabilities: {},
-    protocolVersion: "2026-01-26"
-  }).then(() => send("ui/notifications/initialized", {}));
-  ready.catch(() => tell("ChatGPT could not connect to the review panel. Continue in the conversation.", true));
-
-  const resize = new ResizeObserver(() => send("ui/notifications/size-changed", {
-    height: Math.ceil(document.body.getBoundingClientRect().height)
-  }));
-  ready.then(() => resize.observe(document.body), () => {});
-
-  async function tool(name, args = {}) {
+  const ready=request('ui/initialize',{appInfo:{name:'lumos-access-review',version:'2.0.0'},appCapabilities:{},protocolVersion:'2026-01-26'})
+    .then(() => send('ui/notifications/initialized',{}));
+  ready.catch(() => tell('The panel could not connect. Continue with the same tools in conversation.',true));
+  const resize=new ResizeObserver(() => send('ui/notifications/size-changed',{height:Math.ceil(document.body.getBoundingClientRect().height)}));
+  ready.then(() => resize.observe(document.body),()=>{});
+  async function run(action) {
+    if(busy) return; busy=true; view.inert=true; view.setAttribute('aria-busy','true'); tell('Working…');
+    try { await action(); } catch(e) { tell(e.message || 'The action failed. Refresh and try again.',true); }
+    finally { busy=false; view.inert=false; view.setAttribute('aria-busy','false'); }
+  }
+  function button(text,action,primary=false) { const b=node('button',text,primary?'primary':''); b.type='button'; b.onclick=()=>run(action); return b; }
+  function actions(...children) { const n=node('div','','actions'); n.append(...children); return n; }
+  async function tool(name,args={}) {
     await ready;
-    const result = await request("tools/call", { name, arguments: args });
-    if (result?.isError || !result?.structuredContent) {
-      throw new Error(result?.content?.[0]?.text || "The review tool returned no data.");
+    const result=await request('tools/call',{name,arguments:args});
+    if(result?.isError) {
+      const error=new Error(result.content?.[0]?.text || 'The review tool rejected the request.');
+      error.toolRejected=true;
+      throw error;
     }
-    acceptResult(result.structuredContent);
-    return result.structuredContent;
+    if(!result?.structuredContent) throw new Error('No review data returned.');
+    accept(result.structuredContent); return result.structuredContent;
   }
-
-  async function askChatGPT(prompt) {
+  async function ask(text) {
     await ready;
-    const result = await request("ui/message", { role: "user", content: [{ type: "text", text: prompt }] });
-    if (result?.isError) throw new Error("ChatGPT could not start the follow-up. Ask in the conversation.");
-    tell("Continue with ChatGPT in the conversation.");
+    const r=await request('ui/message',{role:'user',content:[{type:'text',text}]});
+    if(r?.isError) throw new Error('Continue this request in conversation.');
+    tell('Continue in conversation while your agent investigates.');
+  }
+  const refresh=()=>tool('open_access_review',data ? {review_id:data.review.review_id}:{});
+  function selected() {
+    const key=data.review.run_id+':'+data.group.id;
+    if(!selections.has(key)) selections.set(key,{seen:new Set(), included:new Set()});
+    const {seen,included}=selections.get(key);
+    for(const item of data.items) {
+      if(!seen.has(item.id)) { seen.add(item.id); included.add(item.id); }
+    }
+    return included;
+  }
+  function accept(next) {
+    if(!next?.view || !next.review) return;
+    if(data && next.review.run_id!==data.review.run_id) { selections.clear(); staged.clear(); drafts=[]; retryProposal=null; }
+    if(next.results) {
+      retryProposal=null;
+      for(const result of next.results) staged.delete(result.item_id);
+    }
+    data=next;
+    tell('');
+    render();
   }
 
-  function shareSelection() {
-    request("ui/update-model-context", {
-      structuredContent: { review_id: data.review.review_id, run_id: data.review.run_id,
-        selected_offboarding_item_ids: [...selected] }
-    }).catch(() => {});
+  function evidence(records,parent) {
+    for(const r of records) {
+      const d=node('details','','evidence');
+      const date=(r.observed_at || r.effective_from || '').slice(0,10) || 'Date unavailable';
+      d.append(node('summary',`${r.title} · ${date}`),node('p',`${r.source_system || 'Lumos'} · v${r.version}`,'muted'),node('p',r.excerpt));
+      parent.append(d);
+    }
   }
-
-  const refresh = () => tool("open_access_review");
-  const group = name => tool("get_review_group", { group: name });
-  const label = value => ({ accept: "Accept", reject: "Reject", retain: "Approve", revoke: "Reject" })[value] || value;
-
+  function openDialog(title, content, anchor) {
+    const dialog=node('dialog','','permission-dialog');
+    dialog.setAttribute('aria-label',title);
+    const close=button('Close',()=>dialog.close());
+    dialog.append(node('h2',title),content,actions(close));
+    dialog.addEventListener('close',()=>dialog.remove(),{once:true});
+    document.body.append(dialog);
+    const top=anchor.getBoundingClientRect().top+window.scrollY;
+    dialog.style.top=Math.max(12,top-190)+'px';
+    dialog.showModal();
+    dialog.scrollIntoView({block:'nearest'});
+    return dialog;
+  }
+  async function inspectGrant(item, anchor) {
+    const result=await tool('get_review_context',{review_id:data.review.review_id,item_ids:[item.id]});
+    const brief=result.briefs[0];
+    if(!brief) throw new Error('Evidence for this permission is unavailable.');
+    const content=node('div');
+    for(const question of brief.open_questions || []) content.append(node('p',question,'summary-line'));
+    if(brief.evidence.length) evidence(brief.evidence,content);
+    else content.append(node('p','No Lumos evidence is available for this permission.'));
+    openDialog(`${brief.person} · ${brief.entitlement}`,content,anchor);
+  }
+  const PAGE_SIZE = 25;
+  function openGroup(groupId, cursor=0) {
+    return tool('get_review_group',{review_id:data.review.review_id,group_id:groupId,cursor,limit:PAGE_SIZE});
+  }
+  function openQueueGroup(group, scope, primary=false) {
+    const count=Math.min(group.count,PAGE_SIZE);
+    const pageHint=group.count>count?'first ':'';
+    const noun=count===1?'permission':'permissions';
+    return button(`View ${pageHint}${count} ${noun} ${scope}`,()=>openGroup(group.id),primary);
+  }
+  function queueLane(groups, {kind,heading,description,scope}) {
+    const count=groups.reduce((sum,group)=>sum+group.count,0);
+    const lane=node('section','','queue-lane queue-lane--'+kind);
+    lane.append(node('h3',`${count} · ${heading}`),node('p',description,'muted'));
+    const [first,...rest]=groups;
+    if(first.access_examples?.length) {
+      const extra=first.access_name_count-first.access_examples.length;
+      lane.append(node('p',first.access_examples.join(' · ')+(extra ? ` · +${extra} more` : ''),'summary-line'));
+    }
+    lane.append(node('p',first.reason,'muted'));
+    const firstScope=kind==='batch'
+      ? (first.outcome==='revoke'?'suggested for removal':'suggested to keep') : scope;
+    lane.append(actions(openQueueGroup(first,firstScope,kind==='batch' && first.id===data.review.recommended_group)));
+    if(rest.length) {
+      const more=node('details');
+      more.append(node('summary',`Other ${kind==='batch'?'batches':'groups'} in this section`));
+      const list=node('div','','queue');
+      for(const group of rest) {
+        const row=node('article');
+        row.append(node('h4',`${group.count} · ${group.label}`),node('p',group.reason,'muted'),
+          actions(openQueueGroup(group,kind==='batch'
+            ? (group.outcome==='revoke'?'suggested for removal':'suggested to keep') : scope)));
+        list.append(row);
+      }
+      more.append(list);
+      lane.append(more);
+    }
+    return lane;
+  }
   function overview() {
-    const { groups, pending: remaining, recommended_group: nextGroup, total, people,
-      context_review_label: contextLabel } = data.review;
-    if (!remaining) {
-      view.append(node("h2", "All decisions recorded"),
-        node("p", "The synthetic review is complete. Access removal is simulated.", "muted"));
-      return;
+    const r=data.review;
+    view.append(node('h2',r.pending ? `${r.pending} permissions remaining`:'All decisions recorded'));
+    const batches=r.groups.filter(group=>group.batch_ready);
+    const individual=r.groups.filter(group=>!group.batch_ready && group.id!=='deferred');
+    const deferred=r.groups.filter(group=>group.id==='deferred');
+    if(r.pending) {
+      view.append(node('p','Each section opens its own permissions. Viewing a section records no decisions.','muted'));
+      const queue=node('div','','review-queue');
+      if(batches.length) queue.append(queueLane(batches,{
+        kind:'batch',heading:'Ready for batch review',
+        description:'These permissions can be reviewed together because each batch shares an action and supporting evidence.',
+      }));
+      if(individual.length) queue.append(queueLane(individual,{
+        kind:'individual',heading:'Need individual review',
+        description:'Review these separately to verify whether each person still needs the specific access.',
+        scope:'needing individual review',
+      }));
+      if(deferred.length) queue.append(queueLane(deferred,{
+        kind:'deferred',heading:'Deferred',
+        description:'These permissions are waiting for clarification.',
+        scope:'awaiting clarification',
+      }));
+      view.append(queue);
     }
-    view.append(node("h2", `${remaining} ${remaining === 1 ? "permission" : "permissions"} left to review`),
-      node("p", `${total} total across ${people} people. Choose a group to get started.`, "muted"));
-    const plan = node("ol", "", "plan");
-    plan.setAttribute("aria-label", "Suggested review order");
-    for (const [name, heading, detail] of [
-      ["offboarding", "Ready for bulk review", "Verified HR terminations · Albus recommends Reject"],
-      ["alex", "Need a closer look", `${contextLabel} · Compare policy, Albus, and your work context`],
-    ]) {
-      if (!groups[name]) continue;
-      const next = name === nextGroup;
-      const step = node("li", "", next ? "next" : "");
-      const copy = node("div");
-      copy.append(node("strong", next ? `Start here · ${heading}` : heading), node("small", detail));
-      step.append(node("strong", String(groups[name])), copy);
-      plan.append(step);
-    }
-    const controls = [];
-    if (groups.offboarding) controls.push(button(`Review ${groups.offboarding} offboarding grants`, () => group("offboarding"), true));
-    if (groups.alex) controls.push(button("Review individual grants", () => group("alex"), !groups.offboarding));
-    view.append(plan, actions(...controls));
+    view.append(actions(button('Audit history',()=>tool('get_review_status',{review_id:r.review_id}))));
   }
-
-  function roster(items, selectable) {
-    const table = node("table");
-    table.setAttribute("aria-label", "Exact grants in this batch");
-    const header = node("tr");
-    const headings = selectable ? ["Select", "Person", "Permission"] : ["Person", "Permission", "Decision"];
-    for (const heading of headings) {
-      const cell = node("th", heading, heading === "Select" ? "checkbox" : "");
-      cell.scope = "col";
-      header.append(cell);
+  function decisionPayload(d) {
+    return {item_id:d.item_id,snapshot_version:d.snapshot_version,outcome:d.outcome,
+      reason:d.reason.trim(),evidence_refs:d.evidence_refs,assessment_source:d.assessment_source || 'reviewer',
+      ...(d.context_summary?.trim()?{context_summary:d.context_summary.trim()}:{})};
+  }
+  function prepare(decisions) {
+    return tool('prepare_review_batch',{review_id:data.review.review_id,run_id:data.review.run_id,
+      decisions:decisions.map(decisionPayload)});
+  }
+  function addToConfirmation(decisions) {
+    const combined=new Map(staged);
+    for(const d of decisions) combined.set(d.item_id,d);
+    if(combined.size>50) throw new Error('Confirm the current selection before adding more. Each confirmation supports up to 50 permissions.');
+    for(const d of decisions) staged.set(d.item_id,d);
+    render();
+    tell(`${staged.size} permissions ready to preview together.`);
+  }
+  function actionTone(action) {
+    if(action==='retain' || action==='accept') return 'retain';
+    if(action==='revoke' || action==='reject') return 'revoke';
+    return 'attention';
+  }
+  function recommendationSummary(action, insight) {
+    const panel=node('section','','recommendation');
+    const suggestion=node('div');
+    suggestion.append(node('p','Lumos suggestion','eyebrow'),
+      node('strong',label(action),'decision-action '+actionTone(action)));
+    const reason=node('div');
+    reason.append(node('p','Lumos insight · applies to this batch','eyebrow'),node('p',insight));
+    panel.append(suggestion,reason);
+    return panel;
+  }
+  function permissionRoster(items, selectRow=null, showRecommendations=false, showReceipt=false) {
+    const roster=node('div','','roster'+(showRecommendations?' has-recommendations':''));
+    roster.tabIndex=0;
+    roster.setAttribute('role','region');
+    roster.setAttribute('aria-label','People and permissions');
+    const table=node('table');
+    table.setAttribute('role','table');
+    const heading=table.createTHead().insertRow();
+    heading.setAttribute('role','row');
+    const columns=selectRow ? ['Include','Person','Permission'] : ['Person','Permission'];
+    if(showRecommendations) columns.push('Lumos suggestion','Lumos insight');
+    for(const name of columns) {
+      const th=node('th',name==='Include'?'':name,name==='Include'?'checkbox':'');
+      if(name==='Include') th.append(node('span',name,'visually-hidden'));
+      th.scope='col';
+      th.setAttribute('role','columnheader');
+      heading.append(th);
     }
-    table.append(node("thead"));
-    table.tHead.append(header);
-    const body = table.createTBody();
-    for (const item of items) {
-      const row = body.insertRow();
-      if (selectable) {
-        const input = node("input");
-        input.type = "checkbox";
-        input.checked = selected.has(item.id);
-        input.setAttribute("aria-label", `Include ${item.person}, ${item.entitlement}`);
-        input.addEventListener("change", () => {
-          if (input.checked) selected.add(item.id);
-          else selected.delete(item.id);
-          const preview = document.querySelector("#preview");
-          preview.textContent = `Preview ${selected.size} rejects`;
-          preview.disabled = !selected.size;
-          shareSelection();
+    const body=table.createTBody();
+    for(const item of items) {
+      const row=body.insertRow();
+      row.setAttribute('role','row');
+      if(selectRow) row.insertCell().append(selectRow(item));
+      const person=row.insertCell();
+      person.append(node('strong',item.person));
+      const identity=[item.role,item.team,item.employment_status].filter(Boolean).join(' · ');
+      if(identity) person.append(node('small',identity));
+      const access=row.insertCell();
+      access.append(node('strong',item.entitlement));
+      const scope=[item.application || data.review.application,item.access_type].filter(Boolean).join(' · ');
+      if(scope) access.append(node('small',scope));
+      if(showReceipt && item.receipt_id) access.append(node('small','Receipt '+item.receipt_id));
+      if(item.privileged) access.append(node('span','Privileged access','badge attention'));
+      if(showRecommendations) {
+        const rec=item.original_recommendation;
+        const action=row.insertCell();
+        action.append(node('span','Lumos suggestion','mobile-label'),
+          node('span',label(rec.outcome),'row-action '+actionTone(rec.outcome)));
+        const insight=row.insertCell();
+        insight.append(node('span','Lumos insight','mobile-label'),node('p',rec.basis,'insight'));
+        const question=item.deferred_reason || item.open_questions?.[0];
+        if(question) insight.append(node('small','Needs verification: '+question));
+      }
+      for(const cell of row.cells) cell.setAttribute('role','cell');
+    }
+    roster.append(table);
+    return {roster, body};
+  }
+  function groupView() {
+    const selectedIds=selected(), items=data.items, g=data.group;
+    const heading=node('h2',g.batch_ready ? 'People and permissions' : g.label);
+    const toolbar=node('div','','group-toolbar');
+    toolbar.append(heading,button('Back to queue',refresh));
+    view.append(toolbar);
+    if(g.batch_ready) {
+      const summary=recommendationSummary(g.outcome,g.reason);
+      if(data.sources?.length) {
+        const shared=button('View shared evidence',async()=>{
+          const result=await tool('get_evidence',{evidence_ids:data.sources.map(source=>source.id)});
+          const content=node('div');
+          evidence(result.records,content);
+          openDialog('Shared batch evidence',content,shared);
         });
-        row.insertCell().append(input);
+        shared.classList.add('inline-link');
+        summary.lastChild.append(shared);
       }
-      row.insertCell().textContent = item.person;
-      row.insertCell().textContent = item.entitlement;
-      if (!selectable) row.insertCell().textContent = label(item.outcome);
+      view.append(summary);
     }
-    return table;
-  }
-
-  function evidenceButton(ids, container) {
-    return button("View Lumos evidence", async () => {
-      const result = await tool("get_evidence", { evidence_ids: ids });
-      container.replaceChildren();
-      for (const record of result.records) {
-        const detail = node("details", "", "evidence");
-        detail.append(node("summary", record.title), node("p", record.excerpt));
-        container.append(detail);
+    const count=node('p','','selection-count');
+    toolbar.insertBefore(count,toolbar.lastChild);
+    const chosen=()=>items.filter(item=>selectedIds.has(item.id));
+    const ids=()=>chosen().map(item=>item.id);
+    const checks=new Map();
+    const {roster,body}=permissionRoster(items,item=>{
+      const check=node('input');
+      check.type='checkbox';
+      check.setAttribute('aria-label',`Include ${item.person}, ${item.entitlement}`);
+      check.onchange=()=>{
+        if(check.checked) selectedIds.add(item.id);
+        else selectedIds.delete(item.id);
+        update();
+      };
+      checks.set(item.id,check);
+      return check;
+    },!g.batch_ready);
+    if(items.length<=4) roster.classList.add('roster--short');
+    const selectPage=node('input');
+    selectPage.type='checkbox';
+    selectPage.setAttribute('aria-label','Select all permissions on this page');
+    selectPage.onchange=()=>{
+      for(const item of items) {
+        if(selectPage.checked) selectedIds.add(item.id);
+        else selectedIds.delete(item.id);
       }
-      if (container.firstChild) container.firstChild.open = true;
+      update();
+    };
+    roster.querySelector('th.checkbox').append(selectPage);
+    for(const [index,item] of items.entries()) {
+      if(g.batch_ready) continue;
+      const link=button('View evidence',()=>inspectGrant(item,link));
+      link.classList.add('inline-link');
+      link.setAttribute('aria-label',`View evidence for ${item.person}, ${item.entitlement}`);
+      body.rows[index].lastElementChild.append(link);
+    }
+    const filter=node('input');
+    filter.type='text';
+    filter.setAttribute('aria-label','Search this page');
+    filter.placeholder='Name, title, or access';
+    const searchStatus=node('small');
+    searchStatus.setAttribute('aria-live','polite');
+    filter.oninput=()=>{
+      const query=filter.value.trim().toLowerCase();
+      let visible=0;
+      for(const row of body.rows) {
+        row.hidden=!row.textContent.toLowerCase().includes(query);
+        if(!row.hidden) visible++;
+      }
+      searchStatus.textContent=query ? `${visible} matches on this page. Search leaves selections intact.` : '';
+    };
+    if(items.length>4) toolbar.insertBefore(filter,toolbar.lastChild);
+    toolbar.append(searchStatus);
+    view.append(roster);
+    if(data.next_cursor!==null || data.cursor) {
+      const pages=actions();
+      if(data.cursor) pages.append(button('Previous page',()=>openGroup(g.id,Math.max(0,data.cursor-PAGE_SIZE))));
+      if(data.next_cursor!==null) pages.append(button('Next page',()=>openGroup(g.id,data.next_cursor)));
+      view.append(pages);
+    }
+    const manualDrafts=new Map(items.map(item=>[item.id,{
+      item_id:item.id,snapshot_version:item.snapshot_version,evidence_refs:item.evidence_refs,
+      assessment_source:'reviewer',outcome:'',reason:'',
+    }]));
+    let manual=false;
+    const editors=new Map();
+    const shared=node('div','','row-editor');
+    shared.hidden=true;
+    const commonActions=items[0]?.allowed_actions.filter(action=>items.every(item=>item.allowed_actions.includes(action))) || [];
+    const sharedAction=actionPicker(commonActions);
+    const sharedReason=node('textarea');
+    sharedReason.rows=2;
+    sharedReason.maxLength=800;
+    if(g.batch_ready && commonActions.length) {
+      sharedAction.value=g.outcome;
+      sharedReason.value=g.reason;
+      const sharedFields=node('details');
+      sharedFields.append(node('summary','Set an action and reason for all selected permissions'),
+        field('Shared decision',sharedAction),field('Shared audit reason',sharedReason));
+      shared.append(sharedFields);
+    }
+    for(const [index,item] of items.entries()) {
+      const editor=node('div','','row-editor');
+      const draft=manualDrafts.get(item.id);
+      const action=actionPicker(item.allowed_actions,g.batch_ready?'Use shared decision':'Choose a decision');
+      action.onchange=()=>{draft.outcome=action.value;};
+      const reason=node('textarea');
+      reason.rows=2;
+      reason.maxLength=800;
+      reason.oninput=()=>{draft.reason=reason.value;};
+      const identity=`${item.person}, ${item.entitlement}`;
+      editor.append(field(`Decision for ${identity}`,action),field(`Audit reason for ${identity}`,reason));
+      editor.hidden=true;
+      body.rows[index].lastElementChild.append(editor);
+      editors.set(item.id,editor);
+    }
+    roster.before(shared);
+
+    const primary=button('',async()=>{
+      if(manual) {
+        const decisions=ids().map(id=>{
+          const draft=manualDrafts.get(id);
+          return {...draft,outcome:draft.outcome || (g.batch_ready ? sharedAction.value : ''),
+            reason:draft.reason.trim() || (g.batch_ready && (!draft.outcome || draft.outcome===sharedAction.value) ? sharedReason.value.trim() : '')};
+        });
+        if(decisions.some(d=>!d.outcome || !d.reason)) throw new Error('Choose a decision and enter an audit reason for each selected permission.');
+        return prepare(decisions);
+      }
+      if(g.batch_ready) return prepare(chosen().map(item=>({
+        ...manualDrafts.get(item.id),outcome:g.outcome,reason:g.reason,
+      })));
+      return ask(`Investigate these exact grants in review ${data.review.review_id}: ${ids().join(', ')}. Read Lumos briefs and relevant authorized personal context. Present a short account of what changed, prepare one proposal for supported decisions, and leave unresolved grants pending. Do not record or share private context without authorization.`);
+    },true);
+    const manualButton=button('Decide manually',()=>{manual=!manual;update();});
+    const defer=button('Defer selected',()=>{
+      const itemIds=ids();
+      const content=node('div');
+      content.append(node('p',`${itemIds.length} selected ${itemIds.length===1?'permission will':'permissions will'} move to Deferred and remain pending.`));
+      const reason=node('textarea');
+      reason.maxLength=400;
+      reason.rows=2;
+      const dialogStatus=node('p','','muted');
+      dialogStatus.setAttribute('role','status');
+      const confirm=button('Move to Deferred',async()=>{
+        if(!reason.value.trim()) {
+          dialogStatus.textContent='Enter a reason for deferring.';
+          reason.focus();
+          return;
+        }
+        try {
+          await tool('defer_review_items',{review_id:data.review.review_id,run_id:data.review.run_id,
+            item_ids:itemIds,reason:reason.value.trim()});
+          dialog.close();
+          focusHeading();
+        } catch(error) {
+          dialogStatus.textContent=error.message;
+        }
+      },true);
+      content.append(field('Why are you deferring?',reason),dialogStatus,actions(confirm));
+      const dialog=openDialog('Defer selected permissions',content,defer);
+      reason.focus();
     });
-  }
+    const more=node('details');
+    more.append(node('summary','More actions'),defer);
+    const bar=actions(primary,manualButton,more);
+    bar.classList.add('group-actions');
+    view.append(bar);
 
-  function offboarding() {
-    view.append(node("h2", "Offboarding · bulk reject"));
-    if (!data.items.length) {
-      view.append(node("p", "All offboarding grants are recorded.", "muted"), actions(button("Back to overview", refresh)));
-      return;
+    function update() {
+      const n=ids().length;
+      count.textContent=`${n} of ${items.length} selected`+(items.length<g.count ? ` on this page · ${g.count} in group` : '');
+      selectPage.checked=items.length>0 && n===items.length;
+      selectPage.indeterminate=n>0 && n<items.length;
+      for(const [id,check] of checks) {
+        check.checked=selectedIds.has(id);
+        editors.get(id).hidden=!manual || !check.checked;
+      }
+      shared.hidden=!manual || !g.batch_ready || !commonActions.length || !n;
+      primary.textContent=manual || g.batch_ready
+        ? `Review ${n} audit ${n===1?'entry':'entries'}`
+        : `Investigate ${n} ${n===1?'permission':'permissions'}`;
+      primary.disabled=!n;
+      defer.disabled=!n;
+      manualButton.disabled=!n && !manual;
+      manualButton.textContent=manual?'Exit manual editing':'Decide manually';
     }
-    const comparison = node("div", "", "comparison");
-    comparison.append(verdict("Albus", "Reject", data.albus_basis),
-      verdict("ChatGPT · Agree", "Reject", "The verified roster and removal policy cover each grant.", true));
-    const details = node("details");
-    details.append(node("summary", `Inspect or edit ${data.items.length} grants`), roster(data.items, true));
-    const preview = button(`Preview ${selected.size} rejects`, () => tool("preview_offboarding_batch", {
-      run_id: data.review.run_id, item_ids: data.items.filter(item => selected.has(item.id)).map(item => item.id)
-    }), true);
-    preview.id = "preview";
-    preview.disabled = !selected.size;
-    const evidence = node("div");
-    view.append(comparison, details, actions(preview, evidenceButton(data.evidence_ids, evidence),
-      button("Back to overview", refresh)), evidence);
+    update();
+  }
+  function actionPicker(allowedActions,placeholder='Choose a decision') {
+    const picker=node('select');
+    picker.append(new Option(placeholder,''));
+    for(const action of allowedActions) picker.append(new Option(label(action),action));
+    return picker;
   }
 
-  function verdict(source, decision, reason, agent = false) {
-    const box = node("div", "", agent ? "agent" : "");
-    box.append(node("span", source, "label"), node("strong", decision, decision === "Reject" ? "reject" : ""),
-      node("p", reason, "muted"));
+  function field(labelText,control) { control.setAttribute('aria-label',labelText.trim()); const l=node('label',labelText);l.append(control);return l; }
+  function editSharedReason(rows) {
+    view.replaceChildren(node('h2',`Edit audit reason for ${rows.length} permissions`));
+    view.append(permissionRoster(rows).roster);
+    const reason=node('textarea');
+    reason.rows=3;
+    reason.maxLength=800;
+    reason.value=rows[0].reason;
+    view.append(field('Audit reason to be saved',reason),actions(
+      button('Review updated audit entries',()=>{
+        if(!reason.value.trim()) throw new Error('Enter an audit reason.');
+        const ids=new Set(rows.map(row=>row.item_id));
+        return prepare(data.decisions.map(d=>ids.has(d.item_id)
+          ? {...d,reason:reason.value.trim(),assessment_source:'reviewer'} : d));
+      },true),button('Back to audit preview',render)));
+    focusHeading();
+  }
+  function edit() {
+    view.replaceChildren(node('h2','Edit decisions'));
+    view.append(node('p','Excluded permissions stay pending. Edits need a fresh preview before recording.','muted'));
+    for(const d of drafts) {
+      const a=node('article');a.append(node('h3',`${d.person} · ${d.entitlement}`));
+      const include=node('input');include.type='checkbox';include.checked=d.include!==false;
+      include.onchange=()=>d.include=include.checked;a.append(field('Include in proposal ',include));
+      const select=node('select');select.append(new Option('Choose an action',''));
+      for(const action of d.allowed_actions) select.append(new Option(label(action),action));
+      select.value=d.outcome;select.onchange=()=>{d.outcome=select.value;d.assessment_source='reviewer';};a.append(field('Decision',select));
+      const reason=node('textarea');reason.rows=3;reason.maxLength=800;reason.value=d.reason;
+      reason.oninput=()=>{d.reason=reason.value;d.assessment_source='reviewer';};a.append(field('Audit reason saved to Lumos',reason));
+      const summary=node('textarea');summary.rows=2;summary.maxLength=400;summary.value=d.context_summary || '';
+      summary.oninput=()=>{d.context_summary=summary.value;d.assessment_source='reviewer';};
+      a.append(field('Optional work-context summary to share with Lumos',summary),node('small','Only add wording you authorize sharing. Do not paste private excerpts or source identifiers.'));
+      const refs=node('p','Evidence: '+d.evidence_refs.join(', '),'muted');a.append(refs);
+      view.append(a);
+    }
+    view.append(actions(button('Preview updated decisions',async()=>{
+      const chosen=drafts.filter(d=>d.include!==false);
+      if(!chosen.length)throw new Error('Include at least one supported decision.');
+      if(chosen.some(d=>!d.outcome || !d.reason.trim()))throw new Error('Choose an action and add an audit reason for every included permission.');
+      await tool('prepare_review_batch',{review_id:data.review.review_id,run_id:data.review.run_id,decisions:chosen.map(d=>({
+        item_id:d.item_id,snapshot_version:d.snapshot_version,outcome:d.outcome,reason:d.reason.trim(),
+        evidence_refs:d.evidence_refs,assessment_source:d.assessment_source || 'reviewer',
+        ...(d.context_summary?.trim()?{context_summary:d.context_summary.trim()}:{})}))});
+    },true),button('Back to overview',refresh)));
+    focusHeading();
+  }
+  async function record(id) {
+    try {
+      await tool('record_review_batch',{proposal_id:id});
+    } catch(error) {
+      if(error.toolRejected) throw error;
+      retryProposal=id;
+      render();
+      throw new Error('The submission result is unavailable. Recover this submission to safely check and finish the same batch.');
+    }
+  }
+  function auditText(heading,text) {
+    const box=node('div','','audit-text');
+    box.append(node('h4',heading),node('p',text));
     return box;
   }
-
-  function individualReview() {
-    view.append(node("h2", data.review.context_review_label));
-    for (const item of data.items) {
-      const detail = node("article");
-      const comparison = node("div", "", "comparison");
-      comparison.append(verdict("Albus", label(item.original_recommendation.outcome), item.original_recommendation.basis),
-        verdict("ChatGPT", "Awaiting judgment", "Check Lumos policy and relevant work context.", true));
-      detail.append(node("h3", `${item.person} · ${item.entitlement}`), comparison);
-      view.append(detail);
+  function auditCards(rows, saved=false) {
+    const clusters=new Map();
+    for(const d of rows) {
+      const original=saved ? null : [d.stance,d.original_recommendation,d.albus_basis,d.assessment_source];
+      const key=JSON.stringify([d.outcome,d.reason,d.context_summary,[...(d.evidence_refs || [])].sort(),original]);
+      if(!clusters.has(key)) clusters.set(key,[]);
+      clusters.get(key).push(d);
     }
-    const controls = [];
-    if (data.items.length) {
-      controls.push(button("Check my work context", () => askChatGPT(
-        "Check the Lumos evidence and relevant work context for these pending grants: " +
-        data.items.map(item => `${item.person} · ${item.entitlement}`).join("; ") +
-        ". Follow the review connector’s guidance to preview supported decisions and any verified finding " +
-        "that affected them. Keep raw work context out of Lumos and leave unsupported grants pending."
-      ), true));
-      const evidence = node("div");
-      controls.push(evidenceButton([...new Set(data.items.flatMap(item => item.evidence_refs))], evidence));
-      view.append(actions(...controls, button("Back to overview", refresh)), evidence);
-    } else {
-      view.append(node("p", "All grants in this group have decisions recorded.", "muted"), actions(button("Back to overview", refresh)));
-    }
-  }
-
-  function proposal() {
-    const { group: proposalGroup, decisions, batch_token: token } = data;
-    view.append(node("h2", `Confirm ${decisions.length} ${decisions.length === 1 ? "decision" : "decisions"}`));
-    if (proposalGroup === "offboarding") {
-      view.append(node("p", decisions[0].reason, "muted"), roster(decisions, false));
-    } else {
-      for (const item of decisions) {
-        const detail = node("article");
-        const comparison = node("div", "", "comparison");
-        comparison.append(verdict("Albus", label(item.original_recommendation), item.albus_basis),
-          verdict(`ChatGPT · ${item.stance === "agree" ? "Agree" : "Disagree"}`, label(item.outcome), item.reason, true));
-        detail.append(node("h3", `${item.person} · ${item.entitlement}`), comparison);
-        if (item.context_summary) {
-          const context = node("div", "", "evidence");
-          context.append(node("h3", "Work context to save with this decision"), node("p", item.context_summary));
-          detail.append(context);
-        }
-        view.append(detail);
+    for(const entries of clusters.values()) {
+      const d=entries[0];
+      const card=node('section','','decision-card');
+      card.append(node('h3',label(d.outcome),'decision-action '+actionTone(d.outcome)),
+        node('p',`${entries.length} ${entries.length===1?'permission':'permissions'}`,'muted'),
+        auditText(saved?'Saved audit reason':'Audit reason to be saved',d.reason || 'Reason unavailable'));
+      if(entries.length>1) card.append(node('small',`This reason ${saved?'was saved':'will be saved'} on each of these ${entries.length} entries.`));
+      if(d.context_summary) card.append(auditText(saved?'Saved work-context summary':'Work-context summary to be saved',d.context_summary));
+      if(!saved && d.stance==='different') {
+        const original=node('div','','change-note');
+        original.append(node('p','Lumos originally suggested','eyebrow'),node('strong',label(d.original_recommendation)),
+          node('p',d.albus_basis));
+        card.append(original);
       }
+      card.append(permissionRoster(entries,null,false,saved).roster);
+      if(!saved && entries.length>1) card.append(actions(button('Edit shared audit reason',()=>editSharedReason(entries))));
+      if(!saved && d.evidence_refs?.length) {
+        const details=node('details');
+        details.append(node('summary','Evidence references'),node('small',d.evidence_refs.join(', ')));
+        card.append(details);
+      }
+      view.append(card);
     }
-    view.append(actions(button(`Record ${decisions.length} ${decisions.length === 1 ? "decision" : "decisions"}`,
-      () => tool("record_review_batch", { batch_token: token }), true),
-      button("Back to group", () => group(proposalGroup))));
   }
-
+  function proposal() {
+    const count=data.decisions.length;
+    view.append(node('p','Step 2 · Review the audit','eyebrow'),
+      node('h2',`Review ${count} audit ${count===1?'entry':'entries'}`),
+      node('p','Check the exact reason and permissions for each decision before saving.','muted'));
+    auditCards(data.decisions);
+    const outcomes=new Set(data.decisions.map(d=>d.outcome));
+    const kind=outcomes.size===1 ? (outcomes.has('revoke')?' removal':' keep-access') : '';
+    const id=data.proposal_id;
+    view.append(actions(
+      retryProposal===id ? button('Recover submission',()=>record(id),true)
+        : button(`Record ${count}${kind} ${count===1?'decision':'decisions'}`,()=>record(id),true),
+      button('Edit or exclude decisions',()=>{drafts=data.decisions.map(d=>({...d}));edit();})));
+    const more=node('details');
+    more.append(node('summary','More options'),
+      node('p','Keep this draft in the review queue for this panel session. You can confirm it together with other batches.'),
+      actions(button('Save this batch for later',()=>{addToConfirmation(data.decisions);return refresh();})));
+    view.append(more);
+  }
+  function receipts() {
+    const saved=data.results.filter(r=>r.status==='recorded');
+    const failed=data.results.filter(r=>r.status!=='recorded');
+    view.append(node('p','Step 3 · Verify what was saved','eyebrow'),
+      node('h2',`${saved.length} of ${data.results.length} decisions recorded`),
+      node('p','These reasons come from the saved Lumos receipts. Access removal is simulated.','muted'));
+    auditCards(saved,true);
+    if(failed.length) {
+      const attention=node('section','','decision-card');
+      attention.append(node('h3','Needs attention'));
+      for(const r of failed) attention.append(node('p',`${r.person} · ${r.entitlement} · ${r.status.replaceAll('_',' ')}`));
+      view.append(attention);
+    }
+    const n=data.review.pending;
+    view.append(actions(button(n?`Continue to ${n} ${n===1?'permission':'permissions'} remaining`:'Back to review queue',refresh,true)));
+  }
+  function auditHistory() {
+    view.append(node('h2','Audit history'));
+    if(!data.receipts.length) view.append(node('p','No decisions recorded yet.'));
+    auditCards(data.receipts,true);
+  }
+  function focusHeading(){const h=view.querySelector('h2');if(h){h.tabIndex=-1;h.focus();}}
   function render() {
-    title.textContent = data.review.title;
-    progressLabel.hidden = false;
-    progressLabel.textContent = `${data.review.recorded} of ${data.review.total} recorded`;
-    progress.hidden = false;
-    progress.max = data.review.total;
-    progress.value = data.review.recorded;
+    title.textContent=data.review.title;
+    progressLabel.hidden=false;progressLabel.textContent=`${data.review.recorded} of ${data.review.total} recorded`;
+    progress.hidden=false;progress.max=data.review.total;progress.value=data.review.recorded;
     view.replaceChildren();
-    ({ overview, offboarding, alex: individualReview, proposal })[data.view]?.();
+    view.closest('main').dataset.layout=data.view;
+    if(!data.results && (data.view==='proposal' || data.receipts)) {
+      view.append(actions(button('Back to review queue',refresh)));
+    }
+    if(data.results) receipts();
+    else if(data.receipts) auditHistory();
+    else ({overview,group:groupView,proposal})[data.view]?.();
+    if(staged.size && data.view==='overview' && !data.results && !data.receipts) {
+      const bar=node('div','','hero');
+      bar.append(node('h3',`${staged.size} permissions queued for later`),actions(
+        button('Review queued audit entries',()=>prepare([...staged.values()]),true),
+        button('Clear combined selection',()=>{staged.clear();render();})));
+      view.append(bar);
+    }
+
+    focusHeading();
   }
 })();
 </script>

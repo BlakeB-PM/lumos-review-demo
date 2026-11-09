@@ -22,14 +22,14 @@ function pill(style, text) {
 
 function suggestion(value) {
   return {
-    accept: '<span class="suggestion retain">Accept</span>',
-    reject: '<span class="suggestion revoke">Reject</span>',
+    accept: '<span class="suggestion retain">Keep access</span>',
+    reject: '<span class="suggestion revoke">Remove access</span>',
     review: '<span class="suggestion review">Review</span>',
   }[value];
 }
 
 function decisionLabel(value) {
-  return value === "retain" ? "Approve" : "Reject";
+  return value === "retain" ? "Keep access" : "Remove access";
 }
 
 function decision(value) {
@@ -62,9 +62,9 @@ function renderRows() {
     const tour = report.campaign.id === "AD-REVIEW";
     const actions = recorded
       ? result
-      : `<button type="button" class="action approve" data-action="retain" data-id="${id}" aria-label="Approve ${label}" title="Approve">✓</button>
-         <button type="button" class="action reject" data-action="revoke" data-id="${id}" aria-label="Reject ${label}" title="Reject">×</button>
-         ${needsAttention(item) ? result : ""}`;
+      : `${item.allowed_actions.includes("retain") ? `<button type="button" class="action approve" data-action="retain" data-id="${id}" aria-label="Keep access for ${label}" title="Keep access">✓</button>` : ""}
+         ${item.allowed_actions.includes("revoke") ? `<button type="button" class="action reject" data-action="revoke" data-id="${id}" aria-label="Remove access for ${label}" title="Remove access">×</button>` : ""}
+         ${needsAttention(item) ? result : ""}<button type="button" class="action note" data-action="defer" data-id="${id}" aria-label="Defer ${label}" title="Defer">…</button>${item.deferred_reason ? pill("warning", "Deferred") : ""}`;
     return `<tr>
       <td>${recorded ? "" : `<input type="checkbox" data-select="${id}" aria-label="Select ${person}, ${escapeHtml(item.entitlement)}" ${selected.has(item.id) ? "checked" : ""}>`}</td>
       <td><button type="button" class="item-button" data-item="${id}" aria-label="${label} details">${person}</button></td>
@@ -253,12 +253,13 @@ function openDetail(event) {
 function openDecision(outcome, items) {
   if (!items.length) return;
   draft = { outcome, items, runId: report.run_id, key: crypto.randomUUID() };
-  byId("confirm-title").textContent = `${decisionLabel(outcome)} ${items.length === 1 ? "permission" : `${items.length} permissions`}`;
+  byId("confirm-action").textContent = outcome === "defer" ? "Save deferral" : "Preview decisions";
+  byId("confirm-title").textContent = `${outcome === "defer" ? "Defer" : decisionLabel(outcome)} ${items.length === 1 ? "permission" : `${items.length} permissions`}`;
   byId("confirm-items").innerHTML = items.map((item) =>
     `<li><strong>${escapeHtml(item.person)}</strong> · ${escapeHtml(item.entitlement)} · v${item.snapshot_version}</li>`).join("");
   byId("reason").value = "";
   byId("confirm-error").textContent = "";
-  byId("evidence-picker").hidden = items.length !== 1;
+  byId("evidence-picker").hidden = items.length !== 1 || outcome === "defer";
   const item = items[0];
   byId("evidence-options").innerHTML = items.length === 1 ? item.evidence_sources.map((source) =>
     `<label><input type="checkbox" value="${escapeHtml(source.id)}" ${item.evidence_refs.includes(source.id) ? "checked" : ""}>
@@ -272,27 +273,43 @@ async function recordDecision(event) {
   const error = byId("confirm-error");
   const reason = byId("reason").value.trim();
   const evidence = Array.from(document.querySelectorAll("#evidence-options input:checked"), (input) => input.value);
-  if (!reason || (draft.items.length === 1 && !evidence.length)) {
+  if (!reason || (draft.outcome !== "defer" && draft.items.length === 1 && !evidence.length)) {
     error.textContent = "Add an audit note and cite at least one evidence source.";
     return;
   }
   const request = {
-    review_id: report.campaign.id, run_id: draft.runId, idempotency_key: draft.key, reviewer_confirmed: true,
+    review_id: report.campaign.id, run_id: draft.runId,
     decisions: draft.items.map((item) => ({
       item_id: item.id, snapshot_version: item.snapshot_version, outcome: draft.outcome, reason,
-      evidence_refs: draft.items.length === 1 ? evidence : item.evidence_refs,
+      evidence_refs: draft.items.length === 1 ? evidence : item.evidence_refs, assessment_source: "reviewer",
     })),
   };
   button.disabled = true;
   error.textContent = "";
   try {
-    const response = await fetch("/api/decisions", {
-      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(request),
+    const fingerprint = JSON.stringify(request);
+    const recording = draft.proposal && draft.fingerprint === fingerprint;
+    const endpoint = draft.outcome === "defer" ? "/api/defer" : recording ? "/api/record" : "/api/prepare";
+    const payload = draft.outcome === "defer" ? {review_id: request.review_id, run_id: request.run_id,
+      item_ids: draft.items.map(i => i.id), reason} : recording ? {proposal_id: draft.proposal} : request;
+    const response = await fetch(endpoint, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
       signal: AbortSignal.timeout(10000),
     });
     const result = await response.json();
     if (request.run_id !== report.run_id) return;
     if (!response.ok) throw new Error(result.error || "Decision could not be recorded.");
+    if (draft.outcome === "defer") {
+      byId("confirm").close(); byId("notice").textContent = "Deferred. No access decision recorded."; byId("notice").hidden = false; return;
+    }
+    if (!recording) {
+      draft.proposal = result.proposal_id; draft.fingerprint = fingerprint;
+      byId("confirm-items").innerHTML = result.decisions.map(item =>
+        `<li><strong>${escapeHtml(item.person)}</strong> · ${escapeHtml(item.entitlement)} · ${decisionLabel(item.outcome)}<p>${escapeHtml(item.reason)}</p><small>Evidence: ${escapeHtml(item.evidence_refs.join(", "))}</small></li>`).join("");
+      button.textContent = "Confirm and record decisions";
+      error.textContent = "Preview ready. Review these exact decisions before confirming. Any edit requires another preview.";
+      return;
+    }
     const recorded = result.results.filter((entry) => entry.status === "recorded").length;
     const failures = result.results.filter((entry) => entry.status !== "recorded");
     for (const entry of result.results) selected.delete(entry.item_id);
@@ -381,6 +398,9 @@ byId("bulk").addEventListener("click", (event) => {
   if (action) openDecision(action.dataset.bulk, visibleItems().filter((item) => selected.has(item.id) && !item.receipt));
 });
 byId("confirm-form").addEventListener("submit", recordDecision);
+byId("confirm-form").addEventListener("input", () => {
+  if (draft?.outcome !== "defer") byId("confirm-action").textContent = draft?.proposal ? "Preview updated decisions" : "Preview decisions";
+});
 byId("cancel").addEventListener("click", () => {
   if (!byId("confirm-action").disabled) byId("confirm").close();
 });

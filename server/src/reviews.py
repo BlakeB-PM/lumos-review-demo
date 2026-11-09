@@ -3,7 +3,7 @@ import json
 import re
 import sqlite3
 from contextlib import contextmanager
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from time import perf_counter
 from uuid import uuid4
@@ -11,7 +11,7 @@ from uuid import uuid4
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 REVIEWER = "reviewer-dana"
-SCENARIOS = {"tour": "AD-REVIEW", "warehouse": "Q4-DATA", "chatgpt": "AD-REVIEW"}
+SCENARIOS = {"tour": "AD-REVIEW", "warehouse": "Q4-DATA", "chatgpt": "AD-REVIEW", "slack": "SLACK-REVIEW"}
 REMEDIATION = "not_performed_in_simulation"
 SEARCH_TOKEN = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 
@@ -55,6 +55,10 @@ class Reviews:
             from chatgpt_fixture import load_chatgpt_fixture
 
             load_chatgpt_fixture(self)
+        if scenario == "slack":
+            from slack_fixture import load_slack_fixture
+
+            load_slack_fixture(self)
         self.albus = read_json(ROOT / "fixtures/albus-responses.json") if simulated_albus else None
         state_path.parent.mkdir(parents=True, exist_ok=True)
         with self.db() as db:
@@ -84,6 +88,11 @@ class Reviews:
                 CREATE TABLE IF NOT EXISTS investigations (
                     id TEXT PRIMARY KEY, item_id TEXT NOT NULL, result TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS deferrals (item_id TEXT PRIMARY KEY, reason TEXT NOT NULL);
+                CREATE TABLE IF NOT EXISTS proposal_guards (
+                    id TEXT PRIMARY KEY, reviewer_id TEXT NOT NULL, expires_at TEXT NOT NULL,
+                    evidence TEXT NOT NULL
+                );
             """)
             db.execute("INSERT OR IGNORE INTO demo_run VALUES (1, ?)", (str(uuid4()),))
 
@@ -105,27 +114,11 @@ class Reviews:
         with self.db(write=True) as db:
             if expected_run_id is not None and expected_run_id != self.run_id(db):
                 raise ValueError("The demo run changed. Reopen the reset dialog to review the current run.")
-            for table in ("investigations", "decisions", "attempts", "batches", "proposals", "snapshots"):
+            for table in ("investigations", "decisions", "attempts", "batches", "proposals", "snapshots", "deferrals", "proposal_guards"):
                 db.execute(f"DELETE FROM {table}")
             run_id = str(uuid4())
             db.execute("UPDATE demo_run SET id = ? WHERE singleton = 1", (run_id,))
             return run_id
-
-    def start_demo(self, trigger_phrase):
-        run_id = self.reset()
-        campaign = self.campaign(self.campaign_id)
-        items = [item for item in self.items.values() if item["review_id"] == campaign["id"]]
-        return {
-            "status": "demo_restarted",
-            "run_id": run_id,
-            "reviewer": self.reviewer,
-            "campaign": campaign,
-            "counts": {"recorded": 0, "pending": len(items), "failed_pending": 0},
-            "items": [
-                dict(item, status="pending", original_recommendation=self.recommendations[item["id"]])
-                for item in items
-            ],
-        }
 
     def run_id(self, db):
         return db.execute("SELECT id FROM demo_run WHERE singleton = 1").fetchone()[0]
@@ -183,9 +176,9 @@ class Reviews:
         version = self.version(db, item_id)
         record = dict(item, status=status, snapshot_version=version,
                       original_recommendation=self.recommendations[item_id])
-        if version > item["snapshot_version"]:
-            record["key_facts"] = ["Owner closed the sandbox assignment. Prior usage telemetry is historical."]
-            record["evidence_refs"] = [*item["evidence_refs"], "OBS-AR-107-V2"]
+        update = item.get("snapshot_updates", {}).get(str(version), {})
+        record.update(update)
+        record.pop("snapshot_updates", None)
         return record
 
     def audit_report(self, review_id):
@@ -217,7 +210,9 @@ class Reviews:
                     source = self.source_for(db, ref["id"], item_id)
                     if source and source["version"] == ref.get("version", source["version"]):
                         sources.append(source)
-                rows.append({**row, "receipt": receipt, "latest_attempt": latest.get(item_id),
+                deferred = db.execute("SELECT reason FROM deferrals WHERE item_id = ?", (item_id,)).fetchone()
+                rows.append({**row, "deferred_reason": deferred[0] if deferred and not receipt else None,
+                             "receipt": receipt, "latest_attempt": latest.get(item_id),
                              "evidence_sources": sources})
         return {"run_id": run_id, "campaign": campaign, "reviewer": self.reviewer,
                 "items": rows, "events": events, "remediation_status": REMEDIATION}
@@ -265,10 +260,23 @@ class Reviews:
             preview = self.preview_decisions(db, review_id, decisions)
             db.execute("INSERT INTO proposals VALUES (?, ?, ?, ?, ?)",
                        (proposal_id, run_id, client, review_id, json.dumps(decisions)))
+            expires = (datetime.now(timezone.utc) + timedelta(minutes=30)).isoformat()
+            evidence = {d["item_id"]: self.decision_fingerprint(db, d) for d in decisions}
+            db.execute("INSERT INTO proposal_guards VALUES (?, ?, ?, ?)",
+                       (proposal_id, self.reviewer["id"], expires, json.dumps(evidence)))
         return {"proposal_id": proposal_id, "review_id": review_id, "status": "awaiting_confirmation",
-                "decisions": preview}
+                "expires_at": expires, "decisions": preview}
+
+    def decision_fingerprint(self, db, decision):
+        item_id = decision["item_id"]
+        # Bind the proposal to the actual source content, recommendation, and item facts, not only a counter.
+        value = [self.item_record(db, self.items[item_id], "pending"),
+                 [self.source_for(db, ref, item_id) for ref in decision["evidence_refs"]]]
+        return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
 
     def preview_decisions(self, db, review_id, decisions):
+        if not decisions or len(decisions) > 50:
+            raise ValueError("Prepare between 1 and 50 decisions.")
         ids = [decision["item_id"] for decision in decisions]
         if len(ids) != len(set(ids)):
             raise ValueError("Each item must appear only once in the batch.")
@@ -284,7 +292,9 @@ class Reviews:
                 raise ValueError(f"{item_id} changed. Refresh it before preparing the batch.")
             if db.execute("SELECT 1 FROM decisions WHERE item_id = ?", (item_id,)).fetchone():
                 raise ValueError(f"{item_id} has already been reviewed.")
-            if any(self.source_for(db, ref, item_id) is None for ref in decision["evidence_refs"]):
+            if not decision["reason"].strip():
+                raise ValueError("Explain the decision in an audit reason.")
+            if not decision["evidence_refs"] or any(self.source_for(db, ref, item_id) is None for ref in decision["evidence_refs"]):
                 raise ValueError(f"{item_id} has an unavailable evidence reference.")
             preview.append({**decision, "person": item["person"], "entitlement": item["entitlement"],
                             "original_recommendation": self.recommendations[item_id]["outcome"]})
@@ -296,13 +306,16 @@ class Reviews:
                 "SELECT run_id, review_id, decisions FROM proposals WHERE id = ? AND client = ?",
                 (proposal_id, client),
             ).fetchone()
-        if row is None:
+            guard = db.execute("SELECT reviewer_id, expires_at, evidence FROM proposal_guards WHERE id = ?",
+                               (proposal_id,)).fetchone()
+        if row is None or guard is None or guard[0] != self.reviewer["id"]:
             raise ValueError("That proposal is unavailable. Prepare a new batch.")
         run_id, review_id, decisions = row
-        return self.submit_decisions(review_id, json.loads(decisions), proposal_id, True, run_id, client)
+        return self.submit_decisions(review_id, json.loads(decisions), proposal_id, True, run_id, client,
+                                     proposal_guard=(guard[1], json.loads(guard[2])))
 
     def submit_decisions(self, review_id, decisions, idempotency_key, reviewer_confirmed, run_id,
-                         client="local_mcp_demo"):
+                         client="local_mcp_demo", proposal_guard=None):
         self.campaign(review_id)
         if not reviewer_confirmed:
             raise ValueError("Obtain explicit reviewer confirmation for this exact batch.")
@@ -330,7 +343,15 @@ class Reviews:
                 if previous:
                     results.append(json.loads(previous[0]))
                     continue
-                result = self.record_decision(db, review_id, decision, client)
+                blocked = None
+                if proposal_guard:
+                    expires, fingerprints = proposal_guard
+                    if datetime.now(timezone.utc) >= datetime.fromisoformat(expires):
+                        blocked = "proposal_expired"
+                    elif item_id not in self.items or fingerprints.get(item_id) != self.decision_fingerprint(db, decision):
+                        blocked = "refresh_required"
+                result = ({"item_id": item_id, "attempted_at": utc_now(), "client": client, "status": blocked}
+                          if blocked else self.record_decision(db, review_id, decision, client))
                 db.execute("INSERT INTO attempts(batch_key, item_id, result) VALUES (?, ?, ?)",
                            (idempotency_key, item_id, json.dumps(result)))
                 results.append(result)
@@ -360,7 +381,7 @@ class Reviews:
             if row is None or json.loads(row[0])["snapshot_version"] != version:
                 return {**result, "status": "invalid_investigation"}
         receipt = {**result, "status": "recorded", "receipt_id": str(uuid4()),
-                   "review_id": review_id, "reviewer_id": REVIEWER,
+                   "review_id": review_id, "reviewer_id": self.reviewer["id"],
                    "authority": "reviewer_confirmation_reported_by_client",
                    "snapshot_version": version, "outcome": decision["outcome"],
                    "reason": decision["reason"], "remediation_status": REMEDIATION,
@@ -369,7 +390,10 @@ class Reviews:
                    "investigation_id": investigation_id}
         if "context_summary" in decision:
             receipt["context_summary"] = decision["context_summary"]
+            receipt["context_authority"] = "reviewer_approved_external_context_not_verified_by_lumos"
+        receipt["assessment_source"] = decision.get("assessment_source", "reviewer")
         db.execute("INSERT INTO decisions VALUES (?, ?)", (item_id, json.dumps(receipt)))
+        db.execute("DELETE FROM deferrals WHERE item_id = ?", (item_id,))
         return receipt
 
     def get_review_status(self, review_id):

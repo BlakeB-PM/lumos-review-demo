@@ -41,16 +41,16 @@
         </div>
         <div id="bulk" class="bulk" hidden>
           <span id="selection-count"></span>
-          <button type="button" data-bulk="retain" class="action approve" aria-label="Approve selected" title="Approve selected">✓</button>
-          <button type="button" data-bulk="revoke" class="action reject" aria-label="Reject selected" title="Reject selected">×</button>
+          <button type="button" data-bulk="retain" class="action approve" aria-label="Keep selected access" title="Keep selected access">✓</button>
+          <button type="button" data-bulk="revoke" class="action reject" aria-label="Remove selected access" title="Remove selected access">×</button>
           <button type="button" id="clear-selection" class="secondary">Clear</button>
         </div>
       </div>
       <div id="filters" class="filter-bar" hidden>
         <label for="suggestion-filter">Suggestion</label>
         <select id="suggestion-filter">
-          <option value="">All suggestions</option><option value="accept">Accept</option>
-          <option value="reject">Reject</option><option value="review">Review</option>
+          <option value="">All suggestions</option><option value="accept">Keep access</option>
+          <option value="reject">Remove access</option><option value="review">Review</option>
         </select>
       </div>
       <p class="notice" id="notice" role="status" hidden></p>

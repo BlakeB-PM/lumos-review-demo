@@ -6,6 +6,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 
 from mcp_stdio import obj, string
+from chatgpt_review import ReviewWorkflow, TOOLS
 from reviews import ROOT
 
 ASSETS = {
@@ -17,6 +18,9 @@ RESET_SCHEMA = obj(("run_id",), run_id=string())
 
 
 def serve_report(reviews, port, open_browser, decision_schema, validate):
+    workflow = ReviewWorkflow(reviews, "local_review_ui")
+    routes = {"/api/prepare": "prepare_review_batch", "/api/record": "record_review_batch",
+              "/api/defer": "defer_review_items"}
     class Handler(BaseHTTPRequestHandler):
         def local_host(self):
             return self.headers.get("Host") == f"127.0.0.1:{self.server.server_port}"
@@ -38,7 +42,7 @@ def serve_report(reviews, port, open_browser, decision_schema, validate):
             self.respond(200, body, content_type)
 
         def do_POST(self):
-            if self.path not in ("/api/decisions", "/api/reset"):
+            if self.path not in (*routes, "/api/reset"):
                 self.send_error(404)
                 return
             if not self.local_host() or self.headers.get("Origin") != f"http://127.0.0.1:{self.server.server_port}":
@@ -50,7 +54,7 @@ def serve_report(reviews, port, open_browser, decision_schema, validate):
                 if self.headers.get_content_type() != "application/json" or not 0 < size <= 65_536:
                     raise ValueError("Expected a bounded JSON submission.")
                 payload = json.loads(self.rfile.read(size))
-                validate(payload, RESET_SCHEMA if resetting else decision_schema)
+                validate(payload, RESET_SCHEMA if resetting else TOOLS[routes[self.path]][1])
             except ValueError as error:
                 self.respond(400, json.dumps({"error": str(error)}).encode(), "application/json")
                 return
@@ -58,7 +62,7 @@ def serve_report(reviews, port, open_browser, decision_schema, validate):
                 if resetting:
                     result = {"run_id": reviews.reset(expected_run_id=payload["run_id"])}
                 else:
-                    result = reviews.submit_decisions(**payload, client="local_review_ui")
+                    result = getattr(workflow, routes[self.path])(**payload)
             except ValueError as error:
                 self.respond(409 if resetting else 400, json.dumps({"error": str(error)}).encode(), "application/json")
                 return

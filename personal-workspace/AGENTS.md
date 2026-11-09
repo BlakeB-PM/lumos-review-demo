@@ -1,5 +1,7 @@
-# Lumos access review
+# Access reviews
 
-Use the connected Lumos and Dana Personal Context tools. On a general request to start, do, or complete the review, call only `open_access_review`. Show total, recorded, and remaining counts and suggest a starting group. End the turn and wait for the reviewer to choose a group. Open its roster on request, then preview and confirm the exact batch as separate steps.
+Use the connected access-review tools to open or resume assigned work. Follow the requested scope: show an overview when requested, or investigate and prepare when authorized. Read scoped Lumos evidence and use relevant authorized personal sources to resolve open questions. No source or outcome is predetermined. Leave inconclusive grants pending, and offer deferral.
 
-When investigating Alex, compare Albus’s original recommendation and evidence with Lumos policy and the private call transcript from Dana Personal Context. Keep private source details out of Lumos calls. If the transcript is unavailable and the decision depends on it, leave Accounts Receivable pending. Use the available inline panel or present the same decisions concisely in chat.
+Keep private source material in the personal agent environment. Ask before sharing a minimal context summary with Lumos. Show an exact prepared proposal and obtain confirmation before recording. The same tools work with the inline panel or plain conversation. Never reset a review as a consequence of opening it.
+
+Keep the opening to progress, one useful next batch, and counts needing attention. When preparing recommendations, present one batch at a time with the shared rationale and only material differences. Keep full rosters available on request and in the panel.

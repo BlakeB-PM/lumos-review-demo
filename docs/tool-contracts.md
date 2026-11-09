@@ -1,37 +1,25 @@
-# Tool contracts
+# Shared tool contract
 
-## ChatGPT plugin
-
-Run with `--scenario chatgpt --assistant-host chatgpt_work`. The scenario shares its default SQLite file and 17-grant queue with the browser report. The overview, group, preview and record tools advertise the inline `ui://lumos/access-review-v3.html` resource. The tools return structured results for both ChatGPT and the component.
+All fixture scenarios and host profiles expose the same tools. The host flag affects receipt attribution only. Structured results advertise `ui://lumos/access-review-v11.html` for overview, group, proposal and progress views; text-only hosts receive the same facts.
 
 | Tool | Contract |
 | --- | --- |
-| `open_access_review` | Open or resume the synthetic review. Return recorded and pending counts and next groups. |
-| `get_review_group` | Read either the verified offboarding roster or Alex’s remaining grants with original Albus reasoning and Lumos evidence references. |
-| `get_evidence` | Read item-scoped evidence from Lumos. The private transcript lives in a separate connector. |
-| `preview_offboarding_batch` | Validate the selected termination grants and preview the exact rejects. |
-| `preview_alex_batch` | Preview supported judgments using item IDs, versions and allowlisted policy reason codes. When the work call verifies the handoff and explains the lookup, include the bounded `work_context` finding for Accounts Receivable. The resulting summary appears before confirmation and is saved on that grant's receipt. |
-| `record_review_batch` | Submit the signed preview after explicit reviewer confirmation. Return per-grant receipts or conflicts and the updated queue. |
+| open_access_review | Resume the assigned campaign; optional review ID is checked against scope. Return counts, dynamically generated groups and a suggested starting group. |
+| get_review_group | Campaign and group ID, optional cursor/limit. Return exact paginated grants, original recommendations and allowed actions. |
+| get_review_context | Campaign and exact item IDs. Return decision briefs, scoped source excerpts and dates, open questions, and an explicit not-assessed context status. |
+| get_evidence | Read authorized Lumos sources by ID. Private personal sources are not in Lumos. |
+| search_review_evidence | Search within the assigned campaign or exact item. |
+| prepare_review_batch | Stage 1–50 supported decisions with run ID, item version, retain/revoke outcome, audit reason and scoped citations. Optional authorized context summary and assessment attribution. Return immutable proposal ID, exact rows and expiry. |
+| record_review_batch | Record an explicitly confirmed proposal ID. Returns per-item results and receipts. |
+| defer_review_items | Save a reviewer-requested reason for deferring. Items remain pending and can be revisited. |
+| get_review_status | Read receipts, failures, pending items and current overview. |
 
-Previewing does not write decisions or drafts. The server signs the exact decisions and run ID. The signature also identifies an idempotent submission. A reset invalidates previews, and an item changed or recorded since preview returns a conflict. ChatGPT owns its approval UI. The simulator records the authenticated host's confirmation assertion rather than acting as a production authorization service.
+Groups are derived from matching recommendation, rationale and evidence, or explicit open questions/deferrals. Grouping is navigation, not an agent assessment. No agent agreement is synthesized by the UI.
 
-## Legacy tour and warehouse tools
+Preparing does not record decisions. Proposals expire after 30 minutes and are bound to run, campaign, reviewer and client profile. At each write, the server checks the exact item and evidence content plus original recommendation against the proposal fingerprint. This catches changed evidence even if its version was not bumped. Each item commits independently with its attempt. Reusing a proposal recovers existing receipts/errors and completes unattempted rows; stale/expired errors need a new preview. Completed receipts remain recoverable after expiry. Reset invalidates prior proposals. Editing anything requires a replacement proposal.
 
-| Tool | Inputs and result |
-| --- | --- |
-| start_demo | Canonical trigger phrase `Help me complete my access review`. Clears local synthetic state and returns a new run ID, campaign and clean items. |
-| list_my_reviews | Optional campaign status, cursor and limit. Returns assigned campaigns and counts. |
-| get_review_items | Campaign ID plus optional pending/recorded status, cursor and limit. Returns the run ID, exact grants, original recommendation with its recorded version, and the current item snapshot. |
-| get_evidence | Evidence IDs. Returns authorized Markdown excerpts and metadata. Unknown and unassigned sources both appear as unavailable. |
-| search_review_evidence | Campaign ID, query, optional item ID and limit. Returns ranked source matches in the authorized scope. |
-| submit_decisions | Campaign ID, run ID, confirmation assertion, idempotency key and explicit item decisions. Each decision includes item ID, snapshot version, outcome, reason and evidence IDs. Optional investigation ID must match item and snapshot. |
-| get_review_status | Campaign ID. Returns receipts, pending IDs, most recent failures for still-pending items, and remediation status. |
-| prepare_review_batch | Work and Cowork. Validates an explicit, evidence-backed decision draft and returns a proposal ID and reviewable rows. No decision is recorded. |
-| record_review_batch | Work and Cowork. Accepts only the proposal ID and records that exact proposal after reviewer confirmation in the host. Retries use the same ID. |
-| ask_albus | Simulation only. Item ID, snapshot version, specific question and optional bounded attributed claim with explicit sharing intent. Returns a labeled investigation with cited source versions, checks, open issues and timing. |
+The server validates citation scope and freshness, not the semantic truth of agent reasoning. Personal source excerpts and identifiers should stay in the host. A minimal optional summary is authorized before transmission and shown in the final preview; receipts label it externally supplied and not independently verified by Lumos. Free text cannot technically guarantee privacy; see the production boundary.
 
-A submission reserves its idempotency key for the exact ordered payload within a run. Each item and its audit attempt commit together in an independent SQLite transaction. Replaying the same key and payload returns the saved receipts and errors and can finish work interrupted between items. A changed payload needs a new key. An item can have only one recorded decision. A stale write returns refresh_required with the current snapshot. A reset invalidates earlier run IDs, including those of submissions interrupted between items. Keep pending items out of the decision payload.
+Both the browser and panel prepare exact proposals before confirmation. Browser writes use `/api/prepare`, `/api/record`, and `/api/defer`, with same-origin checks. There is no direct public submit endpoint. Reset remains a separate local operator control.
 
-Original recommendation outcomes are `accept`, `reject`, and `review`, following Lumos's documented Albus suggestions. Insight categories explain the suggestion. The demo submission contract uses `retain` and `revoke` for the two supported reviewer decisions. The report labels them **Approve** and **Reject**. An item awaiting a human decision remains **Pending**, including when Albus suggests **Review**. [Lumos reviewer workflow](https://support.lumos.com/articles/8143225870-reviewing-user-access-in-lumos)
-
-Source IDs and versions must be authorized for the specific item. The demo validates citation scope and availability. The reviewer verifies that the cited material supports the proposed decision.
+The local simulator trusts client-reported confirmation; it does not prove that a human clicked a button. Reviewer identity comes from fixtures, not authentication. Tool hints and proposal IDs are not authorization credentials. No actual access removal occurs.
