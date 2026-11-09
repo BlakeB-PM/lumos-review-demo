@@ -9,9 +9,247 @@
   {
     "item_id": "AD-ACCOUNTS-RECEIVABLE",
     "outcome": "accept",
-    "basis": "Customer invoice lookup is consistent with a Sales role. Alex looked up an invoice recently.",
+    "basis": "The Knowledge Hub treats recent invoice lookups as a sign of ongoing Sales follow-up. Alex looked up an invoice recently.",
     "snapshot_version": 1,
     "recorded_at": "2026-11-06T12:00:00Z"
+  },
+  {
+    "item_id": "AD-DIRECTORY-01",
+    "outcome": "accept",
+    "basis": "The employee is active. Company policy grants directory access to all active employees.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-DIRECTORY-02",
+    "outcome": "accept",
+    "basis": "The employee is active. Company policy grants directory access to all active employees.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-DIRECTORY-03",
+    "outcome": "accept",
+    "basis": "The employee is active. Company policy grants directory access to all active employees.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-DIRECTORY-04",
+    "outcome": "accept",
+    "basis": "The employee is active. Company policy grants directory access to all active employees.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-DIRECTORY-05",
+    "outcome": "accept",
+    "basis": "The employee is active. Company policy grants directory access to all active employees.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-DIRECTORY-06",
+    "outcome": "accept",
+    "basis": "The employee is active. Company policy grants directory access to all active employees.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-DIRECTORY-07",
+    "outcome": "accept",
+    "basis": "The employee is active. Company policy grants directory access to all active employees.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-DIRECTORY-08",
+    "outcome": "accept",
+    "basis": "The employee is active. Company policy grants directory access to all active employees.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-DIRECTORY-09",
+    "outcome": "accept",
+    "basis": "The employee is active. Company policy grants directory access to all active employees.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-DIRECTORY-10",
+    "outcome": "accept",
+    "basis": "The employee is active. Company policy grants directory access to all active employees.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-DIRECTORY-11",
+    "outcome": "accept",
+    "basis": "The employee is active. Company policy grants directory access to all active employees.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-DIRECTORY-12",
+    "outcome": "accept",
+    "basis": "The employee is active. Company policy grants directory access to all active employees.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-DIRECTORY-13",
+    "outcome": "accept",
+    "basis": "The employee is active. Company policy grants directory access to all active employees.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-DIRECTORY-14",
+    "outcome": "accept",
+    "basis": "The employee is active. Company policy grants directory access to all active employees.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-DIRECTORY-15",
+    "outcome": "accept",
+    "basis": "The employee is active. Company policy grants directory access to all active employees.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-DIRECTORY-16",
+    "outcome": "accept",
+    "basis": "The employee is active. Company policy grants directory access to all active employees.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-DIRECTORY-17",
+    "outcome": "accept",
+    "basis": "The employee is active. Company policy grants directory access to all active employees.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-SALES-01",
+    "outcome": "accept",
+    "basis": "The employee is assigned to Sales. The Sales Workspace group is part of that role.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-SALES-02",
+    "outcome": "accept",
+    "basis": "The employee is assigned to Sales. The Sales Workspace group is part of that role.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-SALES-03",
+    "outcome": "accept",
+    "basis": "The employee is assigned to Sales. The Sales Workspace group is part of that role.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-SALES-04",
+    "outcome": "accept",
+    "basis": "The employee is assigned to Sales. The Sales Workspace group is part of that role.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-SALES-05",
+    "outcome": "accept",
+    "basis": "The employee is assigned to Sales. The Sales Workspace group is part of that role.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-SALES-06",
+    "outcome": "accept",
+    "basis": "The employee is assigned to Sales. The Sales Workspace group is part of that role.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-SALES-07",
+    "outcome": "accept",
+    "basis": "The employee is assigned to Sales. The Sales Workspace group is part of that role.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-SALES-08",
+    "outcome": "accept",
+    "basis": "The employee is assigned to Sales. The Sales Workspace group is part of that role.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-SALES-09",
+    "outcome": "accept",
+    "basis": "The employee is assigned to Sales. The Sales Workspace group is part of that role.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-SALES-10",
+    "outcome": "accept",
+    "basis": "The employee is assigned to Sales. The Sales Workspace group is part of that role.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-SALES-11",
+    "outcome": "accept",
+    "basis": "The employee is assigned to Sales. The Sales Workspace group is part of that role.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-SALES-12",
+    "outcome": "accept",
+    "basis": "The employee is assigned to Sales. The Sales Workspace group is part of that role.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-ADMIN-01",
+    "outcome": "reject",
+    "basis": "The employee is in Sales. The directory does not list a Finance administrator assignment.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-ADMIN-02",
+    "outcome": "reject",
+    "basis": "The employee is in Sales. The directory does not list a Finance administrator assignment.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-ADMIN-03",
+    "outcome": "reject",
+    "basis": "The employee is in Sales. The directory does not list a Finance administrator assignment.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-TEMP-13",
+    "outcome": "review",
+    "basis": "The directory shows an export grant without a current assignment or an approval record.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
+  },
+  {
+    "item_id": "AD-TEMP-14",
+    "outcome": "review",
+    "basis": "The directory shows an export grant without a current assignment or an approval record.",
+    "snapshot_version": 1,
+    "recorded_at": "2026-11-07T12:00:00Z"
   },
   {
     "item_id": "AR-101",

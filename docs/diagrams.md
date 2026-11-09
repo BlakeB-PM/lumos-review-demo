@@ -6,6 +6,7 @@ flowchart LR
     P[Personal sales handoff] --> C
     C <-->|Assigned review, evidence, staged and confirmed decisions| S[Lumos demo MCP server]
     F[Albus suggestions, directory and usage evidence] --> S
+    K[Simulated Lumos Knowledge Hub] --> S
     S --> D[(Shared SQLite audit and decisions)]
     R[Access Reviews workspace] <-->|Read and record decisions| D
 ~~~

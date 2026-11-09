@@ -1,13 +1,17 @@
 # The one-minute access review demo
 
-Open the review workspace beside your assistant. It should show two permissions for Alex Rivera under **Needs Review**. In Work or Cowork, attach [Dana’s synthetic sales handoff](../personal-workspace/context/sales-handoff.md) to the chat. In the local Codex project, the assistant reads the note from its own workspace. The Lumos connector sees the permission records, policy, and usage.
+Open the review workspace beside the assistant. A fresh campaign shows **36 permissions across 18 people**. Start a Work chat from a ChatGPT project that has [Dana’s sales handoff](../personal-workspace/context/sales-handoff.md) in **Sources**. Select **Lumos Access Reviews** and use the prompt below. In local Codex, the same file lives in the personal workspace.
+
+> Help me complete my access review. Start with Alex Rivera’s permissions.
+
+The project source simulates the personal agent’s context. The [simulated Knowledge Hub entry](../server/data/knowledge/knowledge-hub/AD-KH-SALES.md) is available separately through Lumos. It treats recent invoice lookups as a signal of ongoing work. Dana’s handoff explains why that signal is misleading for Alex.
 
 | Say or do | What this shows |
 | --- | --- |
-| Point to **Accept** on Accounts Receivable. **“Lumos sees that Alex is in Sales and looked up an invoice recently. Based on that, keeping access makes sense.”** | Accounts Receivable lets Alex see whether customers have paid. The review table shows why Lumos suggested keeping it. |
-| Say **“Help me complete my access review.”** | The assistant finds Dana’s handoff: Sales Ops took over invoice follow-up. It checks the policy, which limits access to people who still do that work. It proposes **Reject Accounts Receivable**, reversing Lumos. It agrees with Lumos on **Reject Finance Admin**. |
+| Show the **36** pending permissions, then search for **Alex Rivera** and point to **Accept** on Accounts Receivable. | Lumos sees a recent invoice lookup. That activity supports keeping the permission until you learn why the lookup happened. |
+| Start the review from Dana’s project. | The assistant finds the Sales Ops handoff in the project’s Sources, summarizes the queue, and checks the Knowledge Hub entry and policy through MCP. It proposes **Reject Accounts Receivable**, reversing Lumos, and agrees with Lumos on **Reject Finance Admin**. |
 | Read the proposed actions and say **“Confirm those two decisions.”** | The reviewer makes the call. The assistant records the decisions and the audit notes. Dana’s message stays in the personal workspace. |
-| Switch to **Reviewed** and open the Accounts Receivable audit note. **“Same employee, same title. The assistant knew the work had changed. I could see why, make the call, and leave a record.”** | Show **Accept** in Suggestion and **Reject** in Review Action, with the audit note and cited policy. |
+| Switch to **Reviewed** and open the Accounts Receivable audit note. **“Same employee, same title. The assistant knew the work had changed.”** | Show **Accept** in Suggestion and **Reject** in Review Action, with the audit note and cited policy. **34** permissions are still pending. |
 | Close with **“Draft an IT request to update the Lumos Knowledge Hub so the next review gets this right.”** | Show the assistant’s unsent IT request. The individual decision is already recorded. This separate request would carry the verified handoff into future reviews. |
 
 **Draft IT request — Update Active Directory review context in the Lumos Knowledge Hub**

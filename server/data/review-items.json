@@ -25,8 +25,824 @@
     "snapshot_version": 1,
     "insight_categories": ["Role Aligned"],
     "key_facts": ["The directory lists Alex in Sales, and the activity log shows a recent invoice lookup."],
-    "evidence_refs": ["AD-INVOICE-RECORD"],
+    "evidence_refs": ["AD-INVOICE-RECORD", "AD-KH-SALES", "AD-INVOICE-POLICY"],
     "allowed_actions": ["retain", "revoke"]
+  },
+  {
+    "id": "AD-DIRECTORY-01",
+    "person": "Samira Cole",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Employee Directory",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is active. Company policy grants directory access to all active employees."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-DIRECTORY"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-DIRECTORY-02",
+    "person": "Jordan Lee",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Employee Directory",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is active. Company policy grants directory access to all active employees."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-DIRECTORY"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-DIRECTORY-03",
+    "person": "Morgan Kim",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Employee Directory",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is active. Company policy grants directory access to all active employees."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-DIRECTORY"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-DIRECTORY-04",
+    "person": "Avery Bell",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Employee Directory",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is active. Company policy grants directory access to all active employees."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-DIRECTORY"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-DIRECTORY-05",
+    "person": "Jamie Patel",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Employee Directory",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is active. Company policy grants directory access to all active employees."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-DIRECTORY"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-DIRECTORY-06",
+    "person": "Taylor Chen",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Employee Directory",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is active. Company policy grants directory access to all active employees."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-DIRECTORY"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-DIRECTORY-07",
+    "person": "Riley Davis",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Employee Directory",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is active. Company policy grants directory access to all active employees."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-DIRECTORY"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-DIRECTORY-08",
+    "person": "Cameron Reed",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Employee Directory",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is active. Company policy grants directory access to all active employees."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-DIRECTORY"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-DIRECTORY-09",
+    "person": "Parker Singh",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Employee Directory",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is active. Company policy grants directory access to all active employees."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-DIRECTORY"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-DIRECTORY-10",
+    "person": "Drew Foster",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Employee Directory",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is active. Company policy grants directory access to all active employees."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-DIRECTORY"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-DIRECTORY-11",
+    "person": "Robin Clark",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Employee Directory",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is active. Company policy grants directory access to all active employees."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-DIRECTORY"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-DIRECTORY-12",
+    "person": "Quinn James",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Employee Directory",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is active. Company policy grants directory access to all active employees."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-DIRECTORY"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-DIRECTORY-13",
+    "person": "Reese Bennett",
+    "role": "Operations Associate",
+    "team": "Operations",
+    "employment_status": "Active",
+    "entitlement": "Employee Directory",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is active. Company policy grants directory access to all active employees."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-DIRECTORY"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-DIRECTORY-14",
+    "person": "Skyler Jones",
+    "role": "Operations Associate",
+    "team": "Operations",
+    "employment_status": "Active",
+    "entitlement": "Employee Directory",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is active. Company policy grants directory access to all active employees."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-DIRECTORY"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-DIRECTORY-15",
+    "person": "Sage Wilson",
+    "role": "Operations Associate",
+    "team": "Operations",
+    "employment_status": "Active",
+    "entitlement": "Employee Directory",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is active. Company policy grants directory access to all active employees."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-DIRECTORY"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-DIRECTORY-16",
+    "person": "Blair Adams",
+    "role": "Operations Associate",
+    "team": "Operations",
+    "employment_status": "Active",
+    "entitlement": "Employee Directory",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is active. Company policy grants directory access to all active employees."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-DIRECTORY"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-DIRECTORY-17",
+    "person": "Emerson Scott",
+    "role": "Operations Associate",
+    "team": "Operations",
+    "employment_status": "Active",
+    "entitlement": "Employee Directory",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is active. Company policy grants directory access to all active employees."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-DIRECTORY"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-SALES-01",
+    "person": "Samira Cole",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Sales Workspace",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is assigned to Sales. The Sales Workspace group is part of that role."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-SALES"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-SALES-02",
+    "person": "Jordan Lee",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Sales Workspace",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is assigned to Sales. The Sales Workspace group is part of that role."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-SALES"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-SALES-03",
+    "person": "Morgan Kim",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Sales Workspace",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is assigned to Sales. The Sales Workspace group is part of that role."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-SALES"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-SALES-04",
+    "person": "Avery Bell",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Sales Workspace",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is assigned to Sales. The Sales Workspace group is part of that role."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-SALES"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-SALES-05",
+    "person": "Jamie Patel",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Sales Workspace",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is assigned to Sales. The Sales Workspace group is part of that role."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-SALES"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-SALES-06",
+    "person": "Taylor Chen",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Sales Workspace",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is assigned to Sales. The Sales Workspace group is part of that role."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-SALES"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-SALES-07",
+    "person": "Riley Davis",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Sales Workspace",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is assigned to Sales. The Sales Workspace group is part of that role."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-SALES"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-SALES-08",
+    "person": "Cameron Reed",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Sales Workspace",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is assigned to Sales. The Sales Workspace group is part of that role."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-SALES"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-SALES-09",
+    "person": "Parker Singh",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Sales Workspace",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is assigned to Sales. The Sales Workspace group is part of that role."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-SALES"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-SALES-10",
+    "person": "Drew Foster",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Sales Workspace",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is assigned to Sales. The Sales Workspace group is part of that role."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-SALES"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-SALES-11",
+    "person": "Robin Clark",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Sales Workspace",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is assigned to Sales. The Sales Workspace group is part of that role."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-SALES"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-SALES-12",
+    "person": "Quinn James",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Sales Workspace",
+    "privileged": false,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Role Aligned"
+    ],
+    "key_facts": [
+      "The employee is assigned to Sales. The Sales Workspace group is part of that role."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-SALES"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-ADMIN-01",
+    "person": "Samira Cole",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Finance Admin",
+    "privileged": true,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Overprivileged"
+    ],
+    "key_facts": [
+      "The employee is in Sales. The directory does not list a Finance administrator assignment."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-ADMIN"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-ADMIN-02",
+    "person": "Jordan Lee",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Finance Admin",
+    "privileged": true,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Overprivileged"
+    ],
+    "key_facts": [
+      "The employee is in Sales. The directory does not list a Finance administrator assignment."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-ADMIN"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-ADMIN-03",
+    "person": "Morgan Kim",
+    "role": "Sales Account Executive",
+    "team": "Sales",
+    "employment_status": "Active",
+    "entitlement": "Finance Admin",
+    "privileged": true,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Overprivileged"
+    ],
+    "key_facts": [
+      "The employee is in Sales. The directory does not list a Finance administrator assignment."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-ADMIN"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-TEMP-13",
+    "person": "Reese Bennett",
+    "role": "Operations Associate",
+    "team": "Operations",
+    "employment_status": "Active",
+    "entitlement": "Customer Export",
+    "privileged": true,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Unusual Access"
+    ],
+    "key_facts": [
+      "The directory shows an export grant without a current assignment or an approval record."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-TEMP"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
+  },
+  {
+    "id": "AD-TEMP-14",
+    "person": "Skyler Jones",
+    "role": "Operations Associate",
+    "team": "Operations",
+    "employment_status": "Active",
+    "entitlement": "Customer Export",
+    "privileged": true,
+    "review_id": "AD-REVIEW",
+    "snapshot_version": 1,
+    "insight_categories": [
+      "Unusual Access"
+    ],
+    "key_facts": [
+      "The directory shows an export grant without a current assignment or an approval record."
+    ],
+    "evidence_refs": [
+      "AD-ROSTER-TEMP"
+    ],
+    "allowed_actions": [
+      "retain",
+      "revoke"
+    ]
   },
   {
     "id": "AR-101",

@@ -48,7 +48,7 @@ TOOLS = {
     "submit_decisions": ("Record explicit local decisions only after the human confirms this exact batch. "
                          "Repeat an identical payload and key to recover its receipts.",
                          obj(("review_id", "decisions", "idempotency_key", "reviewer_confirmed", "run_id"),
-                             review_id=ID, decisions=array(DECISION), idempotency_key=ID,
+                             review_id=ID, decisions=array(DECISION, 50), idempotency_key=ID,
                              reviewer_confirmed={"type": "boolean"}, run_id=ID)),
     "get_review_status": ("Read decision receipts, pending items, failed pending writes and remediation status.",
                           obj(("review_id",), review_id=ID)),
@@ -63,7 +63,7 @@ ALBUS = ("Run a clearly labeled scripted investigation for a specific unresolved
 ASSISTANT_TOOLS = {
     "prepare_review_batch": (
         "Stage and validate an exact decision proposal for human review. Does not record any decision.",
-        obj(("review_id", "run_id", "decisions"), review_id=ID, run_id=ID, decisions=array(DECISION)),
+        obj(("review_id", "run_id", "decisions"), review_id=ID, run_id=ID, decisions=array(DECISION, 50)),
     ),
     "record_review_batch": (
         "Record exactly the previously staged proposal. Call only after the human sees its items, outcomes "
@@ -108,9 +108,11 @@ def serve(reviews, assistant_host=None):
     instructions = (
         "Synthetic access reviews. When the user asks to start by saying "
         "'Help me complete my access review', call start_demo before any review reads. "
-        "For the Active Directory review, explain that the reviewer is deciding which permissions a "
-        "Sales Account Executive should keep. Compare the original suggestion with the current "
-        "permission policy and any authorized personal handoff context. If the handoff is missing, "
+        "For Active Directory, open sales-handoff.md from the personal agent's project sources. "
+        "In a local demo project, explicitly open context/sales-handoff.md under personal-workspace "
+        "before deciding that context is missing. Compare the original suggestion with the current "
+        "permission policy and the handoff. Summarize routine grants, review exceptions first, and honor "
+        "the user's chosen decision scope. If the handoff is missing, "
         "ask for it instead of assuming duties changed. Explain any reversal in plain English, "
         "keep raw personal context in the host, and obtain explicit confirmation before writing. "
         "After recording a confirmed Accounts Receivable reversal, suggest a separate IT request to "

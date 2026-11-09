@@ -277,24 +277,33 @@ def verify_default(state, report):
         run_id = started["run_id"]
         assert started["campaign"]["app"] == "Active Directory"
         assert [(row["entitlement"], row["original_recommendation"]["outcome"])
-                for row in started["items"]] == [("Finance Admin", "reject"), ("Accounts Receivable", "accept")]
+                for row in started["items"][:2]] == [("Finance Admin", "reject"), ("Accounts Receivable", "accept")]
+        assert started["counts"]["pending"] == 36
+        assert len({row["person"] for row in started["items"]}) == 18
         assert report()["run_id"] == run_id and all(row["receipt"] is None for row in report()["items"])
         decisions = [
             {"item_id": row["id"], "snapshot_version": row["snapshot_version"],
              "outcome": "revoke", "evidence_refs": row["evidence_refs"],
              "reason": ("No current business need under the invoice follow-up policy."
                         if row["entitlement"] == "Accounts Receivable" else row["original_recommendation"]["basis"])}
-            for row in started["items"]
+            for row in started["items"][:2]
         ]
         for row in decisions:
             evidence = codex("get_evidence", evidence_ids=row["evidence_refs"])
             assert row["item_id"] in evidence["records"][0]["item_ids"]
-        invoice_policy = codex("get_evidence", evidence_ids=["AD-INVOICE-RECORD"])["records"][0]
+        invoice_policy = codex("get_evidence", evidence_ids=["AD-INVOICE-POLICY"])["records"][0]
         assert "currently handle" in invoice_policy["excerpt"]
+        hub_entry = codex("get_evidence", evidence_ids=["AD-KH-SALES"])["records"][0]
+        assert hub_entry["source_system"] == "Simulated Lumos Knowledge Hub"
+        assert "Sales Ops" not in hub_entry["excerpt"]
         assert not codex("search_review_evidence", **review, query="Casey Brooks")["records"]
 
         with client(state, "--assistant-host", "chatgpt_work", scenario=None) as (_, work):
-            assert work("list_my_reviews")["records"][0]["counts"]["pending"] == 2
+            assert work("list_my_reviews")["records"][0]["counts"]["pending"] == 36
+            first = work("get_review_items", **review, status="pending", limit=20)
+            second = work("get_review_items", **review, status="pending", cursor=first["next_cursor"], limit=20)
+            assert second["next_cursor"] is None
+            assert len({row["id"] for row in first["records"] + second["records"]}) == 36
             proposal = work("prepare_review_batch", **review, run_id=run_id, decisions=decisions)
             assert proposal["decisions"][1]["original_recommendation"] == "accept"
             assert proposal["decisions"][1]["outcome"] == "revoke"
@@ -302,11 +311,11 @@ def verify_default(state, report):
             work("record_review_batch", proposal_id=proposal["proposal_id"])
 
         rows = report()["items"]
-        assert [(row["receipt"]["outcome"], row["receipt"]["reason"]) for row in rows] == [
+        assert [(row["receipt"]["outcome"], row["receipt"]["reason"]) for row in rows if row["receipt"]] == [
             (entry["outcome"], entry["reason"]) for entry in decisions]
         assert rows[1]["original_recommendation"]["outcome"] == "accept"
         assert "Casey Brooks" not in json.dumps(report())
-        assert codex("get_review_status", **review)["counts"]["pending"] == 0
+        assert codex("get_review_status", **review)["counts"]["pending"] == 34
 
 
 if __name__ == "__main__":
@@ -320,5 +329,5 @@ if __name__ == "__main__":
         state = Path(temp) / "tour.sqlite3"
         with browser_report(state, scenario=None) as (report, _):
             verify_default(state, report)
-    print("PASS: two-permission tour, stdio discovery, reviewer scope, evidence, confirmation, partial/stale writes, "
+    print("PASS: 36-permission tour, stdio discovery, reviewer scope, evidence, confirmation, partial/stale writes, "
           "idempotency, clean runs, simulation, browser round trip, and Work/Cowork MCP proposals.")

@@ -10,4 +10,4 @@
   "version": 1
 }
 ---
-Alex Rivera is an active Sales Account Executive. Accounts Receivable lets Alex see customer invoice and payment status. The activity log shows Alex checked a customer invoice on November 5, 2026. The access policy limits this permission to people who currently handle customer invoice follow-up.
+Alex Rivera is an active Sales Account Executive. Accounts Receivable lets Alex see customer invoice and payment status. The activity log shows Alex checked a customer invoice on November 5, 2026.
