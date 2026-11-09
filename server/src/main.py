@@ -62,7 +62,9 @@ ALBUS = ("Run a clearly labeled scripted investigation for a specific unresolved
              )))
 ASSISTANT_TOOLS = {
     "prepare_review_batch": (
-        "Stage and validate an exact decision proposal for human review. Does not record any decision.",
+        "Stage and validate an exact decision proposal for human review. Copy run_id verbatim from "
+        "the latest get_review_items result. If the run changed, refresh and retry before asking "
+        "for confirmation. Does not record any decision.",
         obj(("review_id", "run_id", "decisions"), review_id=ID, run_id=ID, decisions=array(DECISION, 50)),
     ),
     "record_review_batch": (
