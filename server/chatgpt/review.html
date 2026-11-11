@@ -568,21 +568,37 @@
   }
 
   function field(labelText,control) { control.setAttribute('aria-label',labelText.trim()); const l=node('label',labelText);l.append(control);return l; }
-  function editSharedReason(rows) {
-    view.replaceChildren(node('h2',`Edit audit reason for ${rows.length} permissions`));
-    view.append(permissionRoster(rows).roster);
+  function editSharedReason(rows,box,editButton) {
+    if(busy) return;
+    tell('');
+    const text=box.querySelector('p');
     const reason=node('textarea');
     reason.rows=3;
     reason.maxLength=800;
+    reason.required=true;
+    reason.setAttribute('aria-label','Audit reason to be saved');
     reason.value=rows[0].reason;
-    view.append(field('Audit reason to be saved',reason),actions(
-      button('Review updated audit entries',()=>{
-        if(!reason.value.trim()) throw new Error('Enter an audit reason.');
-        const ids=new Set(rows.map(row=>row.item_id));
-        return prepare(data.decisions.map(d=>ids.has(d.item_id)
-          ? {...d,reason:reason.value.trim(),assessment_source:'reviewer'} : d));
-      },true),button('Back to audit preview',render)));
-    focusHeading();
+    const disabledButtons=[...view.querySelectorAll('button')].filter(b=>!b.disabled);
+    disabledButtons.forEach(b=>b.disabled=true);
+    text.hidden=true;
+    editButton.hidden=true;
+    const apply=button('Review updated audit entries',async()=>{
+      if(!reason.value.trim()) { reason.setCustomValidity('Enter an audit reason.'); reason.reportValidity(); tell(''); return; }
+      const ids=new Set(rows.map(row=>row.item_id));
+      await prepare(data.decisions.map(d=>ids.has(d.item_id)
+        ? {...d,reason:reason.value.trim(),assessment_source:'reviewer'} : d));
+    },true);
+    reason.oninput=()=>reason.setCustomValidity('');
+    const cancel=node('button','Cancel');
+    cancel.type='button';
+    const controls=actions(apply,cancel);
+    cancel.onclick=()=>{
+      reason.remove();controls.remove();text.hidden=false;editButton.hidden=false;
+      disabledButtons.forEach(b=>b.disabled=false);
+      tell('');editButton.focus();
+    };
+    box.append(reason,controls);
+    reason.focus();
   }
   function edit() {
     view.replaceChildren(node('h2','Edit decisions'));
@@ -639,10 +655,16 @@
     for(const entries of clusters.values()) {
       const d=entries[0];
       const card=node('section','','decision-card');
+      const reasonBox=auditText(saved?'Saved audit reason':'Audit reason to be saved',d.reason || 'Reason unavailable');
       card.append(node('h3',label(d.outcome),'decision-action '+actionTone(d.outcome)),
-        node('p',`${entries.length} ${entries.length===1?'permission':'permissions'}`,'muted'),
-        auditText(saved?'Saved audit reason':'Audit reason to be saved',d.reason || 'Reason unavailable'));
+        node('p',`${entries.length} ${entries.length===1?'permission':'permissions'}`,'muted'),reasonBox);
       if(entries.length>1) card.append(node('small',`This reason ${saved?'was saved':'will be saved'} on each of these ${entries.length} entries.`));
+      if(!saved && entries.length>1) {
+        const editButton=node('button','Edit shared audit reason');
+        editButton.type='button';
+        editButton.onclick=()=>editSharedReason(entries,reasonBox,editButton);
+        reasonBox.append(actions(editButton));
+      }
       if(d.context_summary) card.append(auditText(saved?'Saved work-context summary':'Work-context summary to be saved',d.context_summary));
       if(!saved && d.stance==='different') {
         const original=node('div','','change-note');
@@ -651,7 +673,6 @@
         card.append(original);
       }
       card.append(permissionRoster(entries,null,false,saved).roster);
-      if(!saved && entries.length>1) card.append(actions(button('Edit shared audit reason',()=>editSharedReason(entries))));
       if(!saved && d.evidence_refs?.length) {
         const details=node('details');
         details.append(node('summary','Evidence references'),node('small',d.evidence_refs.join(', ')));
